@@ -4,7 +4,7 @@ xhtml2pdf==0.2.17
 django-crispy-forms==2.1
 crispy-bootstrap5==2024.2
 reportlab==4.0.9
-Pillow==10.2.0
+Pillow==10.0.0
 requests==2.31.0
 python-dateutil==2.8.2
 pytz==2024.1
