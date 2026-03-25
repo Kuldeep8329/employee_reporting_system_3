@@ -1,0 +1,18 @@
+{
+  "venvPath": "c:\\Users\\Admin\\Desktop\\employee_reporting_system",
+  "venv": "venv",
+  "include": [
+    ".",
+    "reports",
+    "config"
+  ],
+  "pythonVersion": "3.13",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "c:\\Users\\Admin\\Desktop\\employee_reporting_system\\venv\\Lib\\site-packages"
+      ]
+    }
+  ]
+}

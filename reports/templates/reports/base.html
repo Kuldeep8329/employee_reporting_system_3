@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>devNector - {% block title %}{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .navbar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        .btn-success {
+            background: #10b981;
+            border: none;
+            border-radius: 6px;
+        }
+        .btn-danger {
+            background: #ef4444;
+            border: none;
+            border-radius: 6px;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-submitted { background: #dcfce7; color: #166534; } /* 🟢 Pending */
+        .status-leader { background: #dbeafe; color: #1e40af; }    /* 🔵 Forwarded */
+        .status-subadmin { background: #f3e8ff; color: #6b21a8; }  /* ✅ Approved (UI check) */
+        .status-manager { background: #f3e8ff; color: #6b21a8; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        @media (max-width: 768px) {
+            .dashboard-container {
+                margin: 20px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'home' %}">
+                devNector <span class="text-dark">Reporting</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_authenticated %}
+
+                        <li class="nav-item me-3">
+                            {% if user.role == 'team_leader' %}
+                                {% if request.resolver_match.url_name == 'team_leader_dashboard' %}
+                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
+                                {% else %}
+                                    <a href="{% url 'team_leader_dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Leader Panel</a>
+                                {% endif %}
+                            {% elif user.role == 'admin' %}
+                                {% if request.resolver_match.url_name == 'admin_dashboard' %}
+                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
+                                {% else %}
+                                    <a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Sub-Admin Panel</a>
+                                {% endif %}
+                            {% elif user.role == 'manager' %}
+                                {% if request.resolver_match.url_name == 'manager_dashboard' %}
+                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
+                                {% else %}
+                                    <a href="{% url 'manager_dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Manager Panel</a>
+                                {% endif %}
+                            {% elif user.role == 'superadmin' %}
+                                {% if request.resolver_match.url_name == 'superadmin_dashboard' %}
+                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
+                                {% else %}
+                                    <a href="{% url 'superadmin_dashboard' %}" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">Super Panel</a>
+                                {% endif %}
+                            {% endif %}
+                        </li>
+                        <li class="nav-item d-flex align-items-center me-3">
+                            {% if user.profile_photo %}
+                            <div class="rounded-circle overflow-hidden border border-2 border-primary shadow-sm me-2 bg-light d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; flex-shrink: 0;">
+                                <img src="{{ user.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; display: block;">
+                            </div>
+                            {% else %}
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 44px; height: 44px; font-weight: bold; flex-shrink: 0;">
+                                {{ user.username|first|upper }}
+                            </div>
+                            {% endif %}
+                            <span class="nav-link text-muted p-0">Welcome, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark fw-semibold d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bars me-2"></i> Menu
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userMenu" style="border-radius: 12px; min-width: 200px;">
+                                <li>
+                                    <a class="dropdown-item py-2 d-flex align-items-center" href="#">
+                                        <i class="fas fa-user-circle me-3 text-primary"></i> Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'leave_request' %}">
+                                        <i class="fas fa-calendar-plus me-3 text-success"></i> Leave Request
+                                    </a>
+                                                               <li>
+                                     {% if user.role == 'admin' or user.role == 'superadmin' or user.role == 'manager' %}
+                                         <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'admin_issue_list' %}">
+                                             <i class="fas fa-bug me-3 text-warning"></i> Issue Tracker
+                                         </a>
+                                     {% else %}
+                                         <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'issue_tracker' %}">
+                                             <i class="fas fa-bug me-3 text-warning"></i> Issue Tracker
+                                         </a>
+                                     {% endif %}
+                                 </li>
+                                 <li><hr class="dropdown-divider"></li>
+                                 <li>
+                                     <form id="logout-form" action="{% url 'logout' %}" method="post" class="d-none">
+                                         {% csrf_token %}
+                                     </form>
+                                     <a class="dropdown-item py-2 d-flex align-items-center text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                         <i class="fas fa-sign-out-alt me-3"></i> Logout
+                                     </a>
+                                 </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <!-- Dashboard Content -->
+        {% block content %}{% endblock %}
+
+        <!-- SweetAlert2 Toast for Django Messages -->
+        {% if messages %}
+        {{ messages|json_script:"django-messages" }}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const messages = JSON.parse(document.getElementById('django-messages').textContent);
+                messages.forEach(msg => {
+                    let icon = 'info';
+                    let title = 'Notification';
+                    
+                    if (msg.tags.includes('error')) { 
+                        icon = 'error'; 
+                        title = 'Shift Schedule'; 
+                    } else if (msg.tags.includes('success')) { 
+                        icon = 'success'; 
+                        title = 'Success!'; 
+                    } else if (msg.tags.includes('warning')) { 
+                        icon = 'warning'; 
+                        title = 'Warning'; 
+                    } else if (msg.tags.includes('info')) {
+                        icon = 'info';
+                        title = 'Information';
+                    }
+
+                    Swal.fire({
+                        icon: icon,
+                        title: title,
+                        text: msg.message,
+                        confirmButtonColor: '#3b82f6',
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                });
+            });
+        </script>
+        {% endif %}
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {% if user.is_authenticated %}
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <script>
+        function sendHeartbeat() {
+            const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+            if (token) {
+                fetch("{% url 'heartbeat' %}", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": token, "Content-Type": "application/json" }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // If dashboard timer exists, update its base accumulation from server
+                    if (data.status === 'ok' && typeof window.updateAccumulatedTime === 'function') {
+                        window.updateAccumulatedTime(data.accumulated_ms, data.session_start_iso);
+                    }
+                })
+                .catch(() => {});
+            }
+        }
+        setInterval(sendHeartbeat, 20000); // 20s
+        setTimeout(sendHeartbeat, 2000);
+        
+        window.addEventListener('beforeunload', function() {
+            if(navigator.sendBeacon) {
+                // We use standard fetch/signal logout logic via DB organically decaying,
+                // but we can try pinging the end session point if needed here.
+            }
+        });
+    </script>
+
+    {% if request.resolver_match.url_name and '_dashboard' in request.resolver_match.url_name %}
+    <script>
+        // --- Back Button Protection (Dashboards Only) ---
+        // Push a state so we can catch the back button event
+        history.pushState(null, null, window.location.href);
+        
+        window.onpopstate = function (event) {
+            Swal.fire({
+                title: 'Exit Portal?',
+                text: "Do you want to exit from the portal?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', // Bootstrap Danger
+                cancelButtonColor: '#64748b',  // Bootstrap Secondary
+                confirmButtonText: 'Yes, Exit',
+                cancelButtonText: 'No, Stay',
+                reverseButtons: true,
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect to our custom logout view (GET supported)
+                    window.location.href = "{% url 'logout' %}";
+                } else {
+                    // Push the state back so we can catch the next back click
+                    history.pushState(null, null, window.location.href);
+                }
+            });
+        };
+    </script>
+    {% endif %}
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,288 @@
+{% extends "reports/base.html" %}
+
+{% block title %}Team Leader Dashboard{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-7">
+        <h2 class="fw-bold text-primary mb-1">devNector Team Leader Dashboard</h2>
+        <div class="d-flex align-items-center gap-3 mt-2">
+            {% if team.logo %}
+            <div class="rounded-circle overflow-hidden border border-2 border-primary shadow" style="width: 56px; height: 56px; flex-shrink: 0;">
+                <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
+            <p class="text-muted small mb-0">Managing <span class="fw-bold">{{ team.name|default:"Unassigned" }}</span></p>
+        </div>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <div class="d-inline-flex gap-2">
+            <!-- PDF Report Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-danger fw-bold shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-pdf me-1"></i> Team PDF
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=today"><i class="fas fa-calendar-day text-danger me-2"></i> Today</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=7_days"><i class="fas fa-calendar-week text-danger me-2"></i> Last 7 Days</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=30_days"><i class="fas fa-calendar-alt text-danger me-2"></i> Last 30 Days</a></li>
+                </ul>
+            </div>
+            <!-- Excel Report Dropdown -->
+            <div class="dropdown">
+                <button class="btn btn-outline-success fw-bold shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-excel me-1"></i> Team Excel
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=today"><i class="fas fa-calendar-day text-success me-2"></i> Today</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=7_days"><i class="fas fa-calendar-week text-success me-2"></i> Last 7 Days</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=30_days"><i class="fas fa-calendar-alt text-success me-2"></i> Last 30 Days</a></li>
+                </ul>
+            </div>
+            <!-- Issues PDF -->
+            <a href="{% url 'export_issues_pdf' %}" class="btn btn-outline-warning fw-bold shadow-sm">
+                <i class="fas fa-bug-slash me-1"></i> Issues PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Live Team Presence + Clickable Employee Cards -->
+<h4 class="fw-bold mb-3 text-dark">Live Team Presence</h4>
+<div class="row mb-5">
+    {% for member in team.members.all %}
+        {% if member.role == 'employee' %}
+        <div class="col-md-3 mb-4">
+            <a href="{% url 'leader_employee_detail' member.id %}" class="text-decoration-none">
+                <div class="card p-3 shadow-sm border-0 h-100 bg-white" style="border-radius: 14px; transition: transform 0.18s, box-shadow 0.18s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.10)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+                    <div class="d-flex align-items-center">
+                        <div class="position-relative">
+                            {% if member.profile_photo %}
+                            <div class="rounded-circle overflow-hidden border border-1 border-primary shadow-sm" style="width: 50px; height: 50px;">
+                                <img src="{{ member.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
+                            </div>
+                            {% else %}
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            {% endif %}
+                            <span class="position-absolute bottom-0 end-0 p-1 border border-2 border-white rounded-circle {% if member.is_currently_online %}bg-success{% else %}bg-danger{% endif %}" title="{% if member.is_currently_online %}Online{% else %}Offline{% endif %}" style="width: 14px; height: 14px;"></span>
+                        </div>
+                        <div class="ms-3 flex-fill">
+                            <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 130px;">{{ member.get_full_name|default:member.username }}</h6>
+                            <p class="text-muted small mb-0">
+                                {% if member.is_currently_online %}
+                                    <span class="text-success fw-bold"><i class="fas fa-circle" style="font-size:8px;"></i> Online</span>
+                                {% else %}
+                                    <span class="text-muted"><i class="fas fa-circle" style="font-size:8px;"></i> Offline</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted small"></i>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+    {% empty %}
+        <div class="col-12 text-muted text-center">No team members assigned yet.</div>
+    {% endfor %}
+</div>
+
+<hr class="mb-4 text-muted">
+
+<!-- Employee Reports Table -->
+<h4 class="fw-bold mb-3 text-dark">Employee Reports</h4>
+<div class="card p-3 shadow-sm border-0" style="border-radius: 16px;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light">
+                <tr class="text-muted small fw-bold">
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Timer</th>
+                    <th>Hours</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td class="d-flex align-items-center gap-2">
+                        {% if report.user.profile_photo %}
+                        <div class="rounded-circle overflow-hidden border border-light shadow-sm" style="width: 32px; height: 32px; flex-shrink: 0;">
+                            <img src="{{ report.user.profile_photo.url }}" alt="P" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
+                        </div>
+                        {% else %}
+                        <div class="rounded-circle bg-secondary bg-opacity-10 text-muted d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.8rem; flex-shrink: 0;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        {% endif %}
+                        <span class="fw-bold">{{ report.user.get_full_name|default:report.user.username }}</span>
+                    </td>
+                    <td class="text-muted">{{ report.date|date:"M d, Y" }}</td>
+                    <td style="max-width: 350px;" class="text-truncate">{{ report.work_description }}</td>
+                    <td class="text-muted small fw-bold">{{ report.work_duration_calc|default:"--" }}</td>
+                    <td class="fw-semibold">{{ report.hours_worked }}h</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-1">
+                            {% if report.status == 'pending' %}
+                            <span class="status-badge status-submitted"><i class="fas fa-clock me-1"></i> Pending Approval</span>
+                            {% elif report.status == 'accepted' %}
+                            <span class="status-badge status-leader"><i class="fas fa-check-circle me-1"></i> Accepted & Saved</span>
+                            {% else %}
+                            <span class="status-badge status-rejected">{{ report.status|capfirst }}</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if report.status == 'pending' %}
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'approve_report' report.id %}" class="btn btn-success btn-sm px-3 shadow-sm fw-bold">
+                                    <i class="fas fa-check me-1"></i> Accept & Save
+                                </a>
+                                <a href="{% url 'reject_report' report.id %}" class="btn btn-outline-danger btn-sm px-3 shadow-sm fw-bold">
+                                    Reject
+                                </a>
+                            </div>
+                        {% else %}
+                            <span class="text-muted small fw-bold text-success"><i class="fas fa-check-double me-1"></i> Processed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">No reports found for your team.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3 mt-5 text-dark">Pending Leave Requests</h4>
+<div class="card p-3 shadow-sm border-0 mb-5" style="border-radius: 16px;">
+    <!-- ... Leave Requests Table ... -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light">
+                <tr class="text-muted small fw-bold">
+                    <th>Employee</th>
+                    <th>Dates</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leave_requests %}
+                <tr>
+                    <td>
+                        <span class="fw-bold">{{ leave.user.get_full_name|default:leave.user.username }}</span>
+                    </td>
+                    <td><span class="badge bg-light text-dark fw-normal">{{ leave.start_date }} to {{ leave.end_date }}</span></td>
+                    <td style="max-width: 300px;" class="text-truncate">{{ leave.reason }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-1">
+                            {% if leave.status == 'pending' %}
+                                <span class="status-badge bg-warning bg-opacity-10 text-warning"><i class="fas fa-clock me-1"></i> Pending</span>
+                            {% elif leave.status == 'reviewing' %}
+                                <span class="status-badge bg-info bg-opacity-10 text-info"><i class="fas fa-search me-1"></i> In Review</span>
+                            {% elif leave.status == 'approved' %}
+                                <span class="status-badge bg-success bg-opacity-10 text-success"><i class="fas fa-check me-1"></i> Approved</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        {% if leave.status == 'pending' or leave.status == 'reviewing' %}
+                        <form action="{% url 'approve_leave' leave.id %}" method="post" class="d-flex gap-2">
+                            {% csrf_token %}
+                            {% if leave.status == 'pending' %}
+                            <button type="submit" name="review" class="btn btn-info btn-sm text-white fw-bold">Review</button>
+                            {% endif %}
+                            <button type="submit" name="approve" class="btn btn-success btn-sm fw-bold">Approve</button>
+                            <button type="submit" name="reject" class="btn btn-outline-danger btn-sm fw-bold">Reject</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted small fw-bold"><i class="fas fa-history me-1"></i> Processed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No pending leave requests.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3 mt-4 text-dark"><i class="fas fa-bug text-danger me-2"></i> Pending System Issues</h4>
+<div class="card p-3 shadow-sm border-0" style="border-radius: 16px;">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light">
+                <tr class="text-muted small fw-bold">
+                    <th>Employee</th>
+                    <th>Issue Detail</th>
+                    <th>Type / Severity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in issue_reports %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ issue.user.get_full_name|default:issue.user.username }}</div>
+                        <div class="text-muted small">{{ issue.user.team.name }}</div>
+                    </td>
+                    <td style="max-width: 250px;">
+                        <div class="fw-bold text-dark">{{ issue.title }}</div>
+                        <div class="text-muted small text-truncate">{{ issue.description }}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border">{{ issue.get_issue_type_display }}</span>
+                        {% if issue.status == 'reviewing' %}
+                            <span class="badge bg-info text-white"><i class="fas fa-search me-1"></i> IN REVIEW</span>
+                        {% elif issue.severity == 'critical' %}
+                            <span class="badge bg-danger">CRITICAL</span>
+                        {% elif issue.severity == 'high' %}
+                            <span class="badge bg-warning text-dark">HIGH</span>
+                        {% else %}
+                            <span class="badge bg-info text-dark">{{ issue.severity|upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            {% if issue.status == 'pending' %}
+                            <a href="{% url 'leader_issue_action' issue.id 'review' %}" class="btn btn-info btn-sm text-white fw-bold">
+                                Review
+                            </a>
+                            {% endif %}
+                            
+                            {% if issue.status == 'pending' or issue.status == 'reviewing' %}
+                            <a href="{% url 'leader_issue_action' issue.id 'accept' %}" class="btn btn-success btn-sm fw-bold">
+                                Accept & Escalate
+                            </a>
+                            <a href="{% url 'leader_issue_action' issue.id 'reject' %}" class="btn btn-outline-danger btn-sm fw-bold">
+                                Reject
+                            </a>
+                            {% else %}
+                            <span class="text-muted small fw-bold">Processed</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">No pending system issues for your team.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

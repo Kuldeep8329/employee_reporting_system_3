@@ -1,0 +1,57 @@
+{% extends "reports/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Submit Daily Report{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card p-4 shadow-sm" style="border-radius: 20px;">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h2 class="fw-bold text-primary mb-0">devNector Work Submission</h2>
+                    <div class="text-end">
+                        <span class="badge bg-light text-primary p-2 fs-6 border" style="border-radius: 10px;">
+                            Total Time: <span class="fw-bold">{{ duration_str }}</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <p class="text-muted mb-5">Please provide details of the work completed during this session.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                             {{ form.work_description|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                             {{ form.hours_worked|as_crispy_field }}
+                             <small class="text-muted">You can adjust the hours if needed.</small>
+                        </div>
+                        {{ form.work_duration_calc }}
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary py-3 fw-bold shadow-sm" id="final-submit-btn">
+                            Submit Final Report & Finish Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const btn = document.getElementById('final-submit-btn');
+        
+        form.addEventListener('submit', function() {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Syncing to Cloud...';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "reports/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Issue Tracker{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Report New Issue -->
+        <div class="col-lg-5 mb-4">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 24px;">
+                <div class="card-header bg-danger p-4 border-0">
+                    <h4 class="text-white mb-0 fw-bold"><i class="fas fa-bug me-2"></i> Report New Issue</h4>
+                    <p class="text-white-50 mb-0 small small fw-normal">Help us improve the system by reporting bugs or requesting features.</p>
+                </div>
+                <div class="card-body p-4 bg-white shadow-sm" style="border-bottom-left-radius: 24px; border-bottom-right-radius: 24px;">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-12 mb-3 mt-2">
+                                {{ form.title|as_crispy_field }}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                {{ form.module_page|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.issue_type|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.severity|as_crispy_field }}
+                            </div>
+                            <div class="col-md-12 mb-4">
+                                {{ form.description|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="d-grid mb-1">
+                            <button type="submit" class="btn btn-danger py-3 fw-bold shadow-sm" style="border-radius: 12px; transition: all 0.3s ease;">
+                                <i class="fas fa-paper-plane me-2"></i> Submit Issue
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Reported Issues -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 24px;">
+                <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
+                    <h4 class="text-dark mb-0 fw-bold"><i class="fas fa-list-check me-2 text-danger"></i> My Reported Issues</h4>
+                    <span class="badge bg-light text-dark border p-2 px-3 fw-normal" style="border-radius: 50px;">
+                        Total: {{ issues.count }}
+                    </span>
+                </div>
+                <div class="card-body p-0 bg-white">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted small text-uppercase">
+                                <tr>
+                                    <th class="ps-4 py-3">Issue Detail</th>
+                                    <th class="py-3">Type / Sev</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="pe-4 py-3 text-end">Reported</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for issue in issues %}
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="fw-bold text-dark">{{ issue.title }}</div>
+                                        <div class="text-muted small">{{ issue.module_page }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border mb-1" style="border-radius: 10px;">{{ issue.get_issue_type_display }}</span><br>
+                                        {% if issue.severity == 'critical' %}
+                                            <span class="badge bg-danger p-1 px-2" style="border-radius: 8px;">CRITICAL</span>
+                                        {% elif issue.severity == 'high' %}
+                                            <span class="badge bg-warning text-dark p-1 px-2" style="border-radius: 8px;">HIGH</span>
+                                        {% else %}
+                                            <span class="badge bg-info text-dark p-1 px-2" style="border-radius: 8px;">{{ issue.severity|upper }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if issue.status == 'pending' %}
+                                            <span class="text-warning small fw-bold"><i class="fas fa-clock-rotate-left me-1"></i> PENDING</span>
+                                        {% elif issue.status == 'accepted' %}
+                                            <span class="text-primary small fw-bold"><i class="fas fa-check-circle me-1"></i> ACCEPTED</span>
+                                        {% elif issue.status == 'resolved' %}
+                                            <span class="text-success small fw-bold"><i class="fas fa-check-double me-1"></i> RESOLVED</span>
+                                        {% else %}
+                                            <span class="text-danger small fw-bold"><i class="fas fa-times-circle me-1"></i> REJECTED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="pe-4 text-end text-muted small">
+                                        {{ issue.created_at|date:"M d, Y" }}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <i class="fas fa-search-minus display-3 text-muted opacity-25 mb-3"></i>
+                                        <p class="text-muted mt-3">You haven't reported any issues yet.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

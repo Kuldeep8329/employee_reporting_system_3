@@ -1,0 +1,232 @@
+{% extends "reports/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Employee Dashboard{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-8">
+        <div class="d-flex align-items-center gap-4">
+            <div class="position-relative">
+                {% if user.profile_photo %}
+                <div class="rounded-circle overflow-hidden border border-3 border-primary shadow-lg bg-light d-flex align-items-center justify-content-center" style="width: 115px; height: 115px; flex-shrink: 0;">
+                    <img src="{{ user.profile_photo.url }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; display: block;">
+                </div>
+                {% else %}
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg" style="width: 115px; height: 115px; font-size: 3rem; font-weight: bold;">
+                    {{ user.username|first|upper }}
+                </div>
+                {% endif %}
+                
+                {% if user.team.logo %}
+                <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 shadow-sm border border-light" style="width: 35px; height: 35px; transform: translate(10%, 10%);">
+                    <img src="{{ user.team.logo.url }}" alt="Team Logo" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                {% endif %}
+            </div>
+            <div>
+                <h2 class="fw-bold text-primary mb-1">Welcome, {{ user.get_full_name|default:user.username }}!</h2>
+                <p class="text-muted mb-0"><i class="fas fa-users-cog me-1"></i> {{ user.team.name|default:"General Core" }} • {{ user.get_role_display }}</p>
+                <div class="mt-2">
+                    {% if user.is_online %}
+                    <span class="badge bg-success rounded-pill px-3"><i class="fas fa-circle me-1" style="font-size: 0.6rem;"></i> Online</span>
+                    {% else %}
+                    <span class="badge bg-secondary rounded-pill px-3">Offline</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <!-- Real-time Timer Section -->
+    <div class="col-lg-12">
+        <div class="card p-4 shadow-sm text-center" style="border-radius: 24px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white;">
+            <div class="card-body">
+                <h5 class="text-white-50 mb-3 fw-bold small text-uppercase tracking-wider">Current Work Session</h5>
+                {% if session_start_iso %}
+                    <h1 id="live-timer" class="display-3 fw-bold mb-4" style="font-family: 'Courier New', Courier, monospace;">00:00:00</h1>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <form method="post" action="{% url 'pause_timer' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning py-3 px-4 fw-bold shadow-sm" style="border-radius: 12px; font-size: 1.1rem;">
+                                <i class="fas fa-pause me-2"></i> Pause Work
+                            </button>
+                        </form>
+                        <button id="submit-work-btn" class="btn btn-primary py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;" {% if has_submitted_today %}disabled title="You have already submitted a report today."{% endif %}>
+                            <i class="fas fa-paper-plane me-2"></i> Submit My Work
+                        </button>
+                    </div>
+                    <p class="text-white-50 mt-3 small">Timer started at: <span id="start-time-display">--:--</span></p>
+                {% else %}
+                    <h1 id="live-timer" class="display-3 fw-bold mb-4 text-white-50" style="font-family: 'Courier New', Courier, monospace;">00:00:00</h1>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <form id="start-timer-form" method="post" action="{% url 'start_timer' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;" {% if has_submitted_today %}disabled title="Daily report already submitted"{% endif %}>
+                                <i class="fas fa-play me-2"></i> 
+                                {% if user.accumulated_ms > 0 %}Resume Work{% else %}Start Work Time{% endif %}
+                            </button>
+                        </form>
+                    </div>
+                    {% if has_submitted_today %}
+                        <p class="text-warning mt-3 small fw-bold"><i class="fas fa-info-circle me-1"></i> You have already submitted your daily report.</p>
+                    {% else %}
+                        <p class="text-white-50 mt-3 small">You do not currently have an active work session.</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Reports History -->
+    <div class="col-lg-12">
+        <div class="card p-3 shadow-sm" style="border-radius: 16px;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0 text-primary">Your Recent Activity</h4>
+                    <span class="badge bg-light text-muted p-2 rounded-pill px-3">{{ reports.count }} Reports</span>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-light">
+                            <tr class="text-muted small fw-bold">
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Calculated Time</th>
+                                <th>Entered Hours</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td class="fw-semibold">{{ report.date|date:"M d, Y" }}</td>
+                                <td style="max-width: 400px;" class="text-truncate">{{ report.work_description }}</td>
+                                <td class="text-muted small fw-bold">{{ report.work_duration_calc|default:"--" }}</td>
+                                <td class="fw-bold">{{ report.hours_worked }}h</td>
+                                <td>
+                                    {% if report.status == 'pending' %}
+                                        <span class="status-badge status-submitted"><i class="fas fa-clock me-1"></i> Pending</span>
+                                    {% elif report.status == 'accepted' %}
+                                        <span class="status-badge status-leader"><i class="fas fa-check-double me-1"></i> Accepted</span>
+                                    {% else %}
+                                        <span class="status-badge status-rejected">{{ report.status|capfirst }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">No reports submitted yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Timer logic -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const storageKey = 'timer_user_' + "{{ user.id }}";
+        const startTimeStr = "{{ session_start_iso }}";
+        let accumulatedMsFromDB = parseInt("{{ accumulated_ms|default:0|stringformat:'d' }}") || 0;
+        
+        let currentSessionStartTime = startTimeStr ? new Date(startTimeStr) : null;
+        if (currentSessionStartTime) {
+            const startTimeDisplay = document.getElementById('start-time-display');
+            if(startTimeDisplay) startTimeDisplay.innerText = currentSessionStartTime.toLocaleTimeString();
+        }
+
+        // Global function to allow heartbeat to sync time from server
+        window.updateAccumulatedTime = function(newMs, newStartTimeStr) {
+            accumulatedMsFromDB = newMs;
+            if (newStartTimeStr) {
+                // Update global startTime variable that the updateTimer closure uses
+                // Note: We need to make startTime a let instead of a const at the top scope
+                currentSessionStartTime = new Date(newStartTimeStr);
+            }
+            updateTimer(); // Refresh UI immediately
+        };
+
+        function updateTimer() {
+            const now = new Date();
+            // Start with time from database
+            let totalDiff = accumulatedMsFromDB;
+            
+            // Add time if a session is currently active
+            if (currentSessionStartTime) {
+                totalDiff += (now - currentSessionStartTime);
+            }
+            
+            if (totalDiff < 0) totalDiff = 0;
+
+            const hours = Math.floor(totalDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((totalDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((totalDiff % (1000 * 60)) / 1000);
+
+            const displayStr = 
+                String(hours).padStart(2, '0') + ":" + 
+                String(minutes).padStart(2, '0') + ":" + 
+                String(seconds).padStart(2, '0');
+
+            document.getElementById('live-timer').innerText = displayStr;
+            
+            // Decimal hours for the report (e.g. 1.50)
+            const totalHours = (totalDiff / (1000 * 60 * 60)).toFixed(2);
+            window.currentWorkHours = totalHours;
+            window.currentTimerStr = displayStr;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+        if (document.getElementById('submit-work-btn')) {
+            document.getElementById('submit-work-btn').addEventListener('click', function() {
+                const btn = this;
+                
+                // Show loading state
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
+                
+                const duration = window.currentWorkHours || '0.0';
+                const timerStr = window.currentTimerStr || '00:00:00';
+                const url = `{% url 'submit_report' %}?duration=${duration}&timer=${timerStr}`;
+                
+                // Final submission fully clears local accumulated time
+                localStorage.removeItem(storageKey + '_accumulated');
+                localStorage.removeItem(storageKey + '_lastTick');
+                
+                // Go directly to submission page — it will stop the timer on the server
+                window.location.href = url;
+            });
+        }
+
+        // Reset button state if user comes back to this page (e.g. back button)
+        window.addEventListener('pageshow', function(event) {
+            const btn = document.getElementById('submit-work-btn');
+            if (btn && btn.disabled) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Submit My Work';
+            }
+        });
+    });
+</script>
+
+{% if request.user.role == 'superadmin' %}
+<div style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    <a href="{% url 'superadmin_dashboard' %}" class="btn btn-dark btn-lg shadow-lg fw-bold rounded-pill border-0 d-flex align-items-center px-4" style="border: 2px solid white !important;">
+        <i class="fas fa-user-shield me-2"></i> Superadmin Control
+    </a>
+</div>
+{% endif %}
+{% endblock %}

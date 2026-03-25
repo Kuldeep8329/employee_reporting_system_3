@@ -1,0 +1,244 @@
+{% extends "reports/base.html" %}
+
+{% block title %}Sub-Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-5">
+    <div class="col-md-7">
+        <h2 class="fw-bold text-primary mb-1">devNector Sub-Admin Dashboard</h2>
+        <p class="text-muted small">Monitor all reports across all teams.</p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <div class="d-flex flex-wrap justify-content-md-end gap-3">
+            <!-- Global PDF Group -->
+            <div class="dropdown">
+                <button class="btn btn-outline-danger btn-lg px-4 py-2 fw-bold shadow-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-pdf me-2"></i> GLOBAL PDF
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2">
+                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=today"><i class="fas fa-calendar-day text-danger me-2"></i> Today's Report</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=7_days"><i class="fas fa-calendar-week text-danger me-2"></i> Last 7 Days</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=30_days"><i class="fas fa-calendar-alt text-danger me-2"></i> Last 30 Days</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item py-2 fw-bold bg-danger bg-opacity-10" href="{% url 'export_pdf' %}"><i class="fas fa-infinity text-danger me-2"></i> ALL TIME DATABASE</a></li>
+                </ul>
+            </div>
+            
+            <!-- Global Excel Group -->
+            <div class="dropdown">
+                <button class="btn btn-outline-success btn-lg px-4 py-2 fw-bold shadow-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-excel me-2"></i> GLOBAL EXCEL
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2">
+                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=today"><i class="fas fa-calendar-day text-success me-2"></i> Today's Report</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=7_days"><i class="fas fa-calendar-week text-success me-2"></i> Last 7 Days</a></li>
+                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=30_days"><i class="fas fa-calendar-alt text-success me-2"></i> Last 30 Days</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item py-2 fw-bold bg-success bg-opacity-10" href="{% url 'export_excel' %}"><i class="fas fa-infinity text-success me-2"></i> ALL TIME DATABASE</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="fw-bold mb-3 text-dark">Teams & Groups</h4>
+<div class="row mb-5">
+    {% for team in teams %}
+    <div class="col-md-4 mb-4">
+        <a href="{% url 'admin_team_detail' team.id %}" class="text-decoration-none">
+            <div class="card h-100 p-4 shadow-sm border-0 bg-white" style="border-radius: 16px; transition: transform 0.2s;">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle overflow-hidden border border-2 border-light shadow-sm d-flex align-items-center justify-content-center bg-white" style="width: 56px; height: 56px; flex-shrink: 0;">
+                        {% if team.logo %}
+                            <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <i class="fas fa-users text-primary"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ms-3">
+                        <h5 class="fw-bold text-dark mb-0">{{ team.name }}</h5>
+                        <p class="text-muted small mb-0">View {{ team.user_set.count }} Employees</p>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center text-muted">No teams available.</div>
+    {% endfor %}
+</div>
+
+<hr class="mb-5 text-muted">
+
+<h4 class="fw-bold mb-3 text-dark">Live Leadership Presence</h4>
+<div class="row mb-5">
+    {% for team in teams %}
+        {% if team.leader %}
+        <div class="col-md-3 mb-3">
+            <a href="{% url 'admin_employee_detail' team.leader.id %}" class="text-decoration-none">
+                <div class="card p-3 shadow-sm border-0 bg-white" style="border-radius: 12px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+                    <div class="d-flex align-items-center">
+                        <div class="position-relative">
+                            {% if team.leader.profile_photo %}
+                            <div class="rounded-circle overflow-hidden border border-1 border-primary shadow-sm" style="width: 45px; height: 45px;">
+                                <img src="{{ team.leader.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
+                            </div>
+                            {% else %}
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                <i class="fas fa-crown mb-0"></i>
+                            </div>
+                            {% endif %}
+                            <span class="position-absolute bottom-0 end-0 p-1 border border-2 border-white rounded-circle {% if team.leader.is_currently_online %}bg-success{% else %}bg-danger{% endif %}" title="{% if team.leader.is_currently_online %}Online{% else %}Offline{% endif %}" style="width: 13px; height: 13px;"></span>
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="fw-bold text-dark mb-0">{{ team.leader.get_full_name|default:team.leader.username }}</h6>
+                            <p class="text-muted small mb-0">{{ team.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+
+<h4 class="fw-bold mb-3 text-dark">Recent Activity Feed</h4>
+
+<div class="row mb-5">
+    <!-- Filter for Final Reports -->
+    <div class="col-md-12 mb-4">
+        <div class="card p-3 shadow-sm border-0" style="border-radius: 12px; border: 1px solid #e2e8f0;">
+           <form method="get" class="row align-items-end g-3">
+               <div class="col-md-3">
+                   <label class="form-label text-muted small fw-bold">Filter by Team</label>
+                   <select name="team_id" class="form-select border-0 bg-light py-2">
+                       <option value="">All Teams</option>
+                       {% for team in teams %}
+                       <option value="{{ team.id }}" {% if request.GET.team_id == team.id|stringformat:"i" %}selected{% endif %}>{{ team.name }}</option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="col-md-3">
+                   <label class="form-label text-muted small fw-bold">Filter by Leader</label>
+                   <select name="leader_id" class="form-select border-0 bg-light py-2">
+                       <option value="">All Leaders</option>
+                       {% for leader in leaders %}
+                       <option value="{{ leader.id }}" {% if request.GET.leader_id == leader.id|stringformat:"i" %}selected{% endif %}>{{ leader.get_full_name|default:leader.username }}</option>
+                       {% endfor %}
+                   </select>
+               </div>
+               <div class="col-md-3">
+                   <label class="form-label text-muted small fw-bold">Filter by Month</label>
+                   <input type="month" name="month" class="form-control border-0 bg-light py-2" value="{{ request.GET.month }}">
+               </div>
+               <div class="col-md-3 d-flex gap-2">
+                   <button type="submit" class="btn btn-primary flex-fill py-2 fw-bold">
+                       Apply
+                   </button>
+                   <a href="{% url 'admin_dashboard' %}" class="btn btn-light flex-fill py-2 fw-bold">Clear</a>
+               </div>
+           </form>
+        </div>
+    </div>
+    
+    <!-- Summary Metrics -->
+    <div class="col-md-6 mb-4 text-center">
+        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff;">
+            <p class="small text-white-50 fw-bold mb-1">TOTAL FINALIZED REPORTS</p>
+            <h1 class="fw-bold mb-0">{{ summary.count|default:0 }}</h1>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4 text-center">
+        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff;">
+            <p class="small text-white-50 fw-bold mb-1">TOTAL FINALIZED HOURS</p>
+            <h1 class="fw-bold mb-0">{{ summary.total_hours|default:0 }}h</h1>
+        </div>
+    </div>
+    
+    <!-- Section 1: Pending Leader Reports -->
+    <div class="col-lg-12 mb-5">
+        <h4 class="fw-bold mb-3 text-dark"><i class="fas fa-clock text-warning me-2"></i>Pending Leader Reports</h4>
+        <div class="card p-4 shadow-sm" style="border-radius: 20px;">
+           <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr class="text-muted small fw-bold">
+                            <th>Leader</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Hours</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in pending_reports %}
+                        <tr>
+                            <td class="fw-bold">
+                                {{ report.user.get_full_name|default:report.user.username }}
+                                <br><small class="text-muted fw-normal">{{ report.user.team.name }}</small>
+                            </td>
+                            <td>{{ report.date|date:"Y-m-d" }}</td>
+                            <td class="text-truncate" style="max-width: 300px;">{{ report.work_description }}</td>
+                            <td class="fw-bold">{{ report.hours_worked }}h</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'approve_report' report.id %}" class="btn btn-success btn-sm px-3 shadow-sm fw-bold">
+                                        <i class="fas fa-check me-1"></i> Accept & Save
+                                    </a>
+                                    <a href="{% url 'reject_report' report.id %}" class="btn btn-outline-danger btn-sm px-3 shadow-sm fw-bold">
+                                        Reject
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-4 text-muted">No pending leader reports.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+           </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Finalized Report Database -->
+    <div class="col-lg-12">
+        <h4 class="fw-bold mb-3 text-dark"><i class="fas fa-database text-primary me-2"></i>Finalized Report Database</h4>
+        <div class="card p-4 shadow-sm" style="border-radius: 20px;">
+           <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="bg-light">
+                        <tr class="text-muted small fw-bold">
+                            <th>Level</th>
+                            <th>Employee</th>
+                            <th>Leader</th>
+                            <th>Team</th>
+                            <th>Date</th>
+                            <th>Hours</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in final_reports %}
+                        <tr {% if report.level == 'leader_level' %}class="table-light"{% endif %}>
+                            <td>
+                                <span class="badge {% if report.level == 'employee_level' %}bg-info{% else %}bg-primary{% endif %}">
+                                    {{ report.get_level_display }}
+                                </span>
+                            </td>
+                            <td class="small">{{ report.employee.get_full_name|default:"--" }}</td>
+                            <td class="small">{{ report.leader.get_full_name|default:"--" }}</td>
+                            <td>{{ report.team.name }}</td>
+                            <td>{{ report.date|date:"Y-m-d" }}</td>
+                            <td class="fw-bold">{{ report.hours_worked }}h</td>
+                            <td><span class="status-badge status-leader"><i class="fas fa-check-double me-1"></i> SAVED</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="7" class="text-center py-4 text-muted">No finalized reports found in database.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+           </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

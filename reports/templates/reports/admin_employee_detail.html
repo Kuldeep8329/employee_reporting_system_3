@@ -1,0 +1,105 @@
+{% extends "reports/base.html" %}
+
+{% block title %}{% if employee.role == 'team_leader' %}Leader{% else %}Employee{% endif %} Details - {{ employee.get_full_name|default:employee.username }}{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-6">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-2">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">All Groups</a></li>
+                <li class="breadcrumb-item">
+                    {% if employee.team %}
+                    <a href="{% url 'admin_team_detail' employee.team.id %}">{{ employee.team.name }}</a>
+                    {% else %}
+                    Unassigned
+                    {% endif %}
+                </li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center gap-3">
+            {% if employee.profile_photo %}
+            <div class="rounded-circle overflow-hidden border border-3 border-primary shadow-sm" style="width: 80px; height: 80px; flex-shrink: 0;">
+                <img src="{{ employee.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
+            </div>
+            {% else %}
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold; flex-shrink: 0;">
+                {{ employee.username|first|upper }}
+            </div>
+            {% endif %}
+            <div>
+                <h2 class="fw-bold text-primary mb-1">{% if employee.role == 'team_leader' %}Leader{% else %}Employee{% endif %}: {{ employee.get_full_name|default:employee.username }}</h2>
+                <p class="text-muted small mb-0">Viewing individual performance and reports.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <div class="dropdown d-inline-block me-2">
+            <button class="btn btn-outline-danger btn-sm fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-file-pdf me-1"></i> PDF
+            </button>
+            <ul class="dropdown-menu shadow-sm border-0">
+                <li><a class="dropdown-item" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-primary me-2"></i> Today</a></li>
+                <li><a class="dropdown-item" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-primary me-2"></i> Last 7 Days</a></li>
+                <li><a class="dropdown-item" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-primary me-2"></i> Last 30 Days</a></li>
+                <li><a class="dropdown-item fw-bold" href="{% url 'export_pdf' %}?user_id={{ employee.id }}"><i class="fas fa-infinity text-primary me-2"></i> All Time</a></li>
+            </ul>
+        </div>
+        <div class="dropdown d-inline-block">
+            <button class="btn btn-outline-success btn-sm fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-file-excel me-1"></i> Excel
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                <li><a class="dropdown-item" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-primary me-2"></i> Today</a></li>
+                <li><a class="dropdown-item" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-primary me-2"></i> Last 7 Days</a></li>
+                <li><a class="dropdown-item" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-primary me-2"></i> Last 30 Days</a></li>
+                <li><a class="dropdown-item fw-bold" href="{% url 'export_excel' %}?user_id={{ employee.id }}"><i class="fas fa-infinity text-primary me-2"></i> All Time</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 shadow-sm border-0 mt-4" style="border-radius: 20px;">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h5 class="fw-bold text-dark mb-0">Filtered Results</h5>
+        <div>
+            <span class="badge {% if duration == 'today' %}bg-primary{% else %}bg-light text-secondary{% endif %}"><a href="?duration=today" class="text-decoration-none text-reset">Today</a></span>
+            <span class="badge {% if duration == '7_days' %}bg-primary{% else %}bg-light text-secondary{% endif %} ms-2"><a href="?duration=7_days" class="text-decoration-none text-reset">Last 7 Days</a></span>
+            <span class="badge {% if duration == '30_days' %}bg-primary{% else %}bg-light text-secondary{% endif %} ms-2"><a href="?duration=30_days" class="text-decoration-none text-reset">Last 30 Days</a></span>
+            <span class="badge {% if not duration %}bg-primary{% else %}bg-light text-secondary{% endif %} ms-2"><a href="?" class="text-decoration-none text-reset">All Time</a></span>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="bg-light">
+                <tr class="text-muted small fw-bold">
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Session Time</th>
+                    <th>Reported Hours</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td class="text-muted">{{ report.date|date:"Y-m-d"|default:report.created_at|date:"Y-m-d" }}</td>
+                    <td style="max-width: 400px;" class="text-truncate">{{ report.work_description }}</td>
+                    <td class="text-muted small fw-bold">{{ report.work_duration_calc|default:"--" }}</td>
+                    <td class="fw-semibold">{{ report.hours_worked }}h</td>
+                    <td>
+                        <span class="status-badge status-{{ report.status }}">
+                            {{ report.status|capfirst }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">No reports found strictly matching filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
