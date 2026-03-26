@@ -85,20 +85,18 @@ def employee_dashboard(request):
     reports = DailyReport.objects.filter(user=request.user).order_by('-date')
     form = DailyReportForm()
     
-    # Daily Reset Logic: If last session was on a different day, clear it.
-    today = timezone.localtime().date()
-    if request.user.last_timer_date and request.user.last_timer_date < today:
-        request.user.accumulated_ms = 0
-        request.user.current_session_start = None
-        request.user.last_timer_date = today
-        request.user.save()
-
     # Session tracking
     session_start = request.user.current_session_start
     session_start_iso = session_start.isoformat() if session_start else ""
     accumulated_ms = request.user.accumulated_ms
 
     if request.method == 'POST':
+        # Enforce 3 reports per day limit
+        reports_today = DailyReport.objects.filter(user=request.user, created_at__date=timezone.localtime().date()).count()
+        if reports_today >= 3:
+            messages.error(request, "You have already submitted 3 reports today.")
+            return redirect('employee_dashboard')
+
         form = DailyReportForm(request.POST)
         if form.is_valid():
             try:
@@ -109,36 +107,24 @@ def employee_dashboard(request):
             except Exception as e:
                 messages.error(request, f"Error saving report: {str(e)}")
 
-    # Enforce 1 report per day logic for UI
-    has_submitted_today = DailyReport.objects.filter(user=request.user, date=today).exists()
-
     return render(request, 'reports/employee_dashboard.html', {
         'reports': reports, 
         'form': form,
         'session_start_iso': session_start_iso,
         'accumulated_ms': accumulated_ms,
-        'has_submitted_today': has_submitted_today
     })
 
 @login_required
 def start_timer(request):
     if request.method == 'POST':
         now = timezone.localtime()
-        hour = now.hour
         
-        # Enforce 1 report per day limit
-        reports_today = DailyReport.objects.filter(user=request.user, date=now.date()).count()
-        if reports_today >= 1:
-            messages.error(request, "You have already submitted your report for today.")
+        # Enforce 3 reports per day limit (submissions made today)
+        reports_today = DailyReport.objects.filter(user=request.user, created_at__date=now.date()).count()
+        if reports_today >= 3:
+            messages.error(request, "You have already submitted 3 reports today. Maximum allowed is 3 per day.")
             return redirect('employee_dashboard')
             
-        # Allowed working hours: 9:30 AM to 11:00 PM
-        current_time_minutes = now.hour * 60 + now.minute
-        # 9:30 AM = 570 mins, 11:00 PM = 1380 mins
-        if not (570 <= current_time_minutes < 1380):
-            messages.error(request, "Off-duty! Working hours are strictly 9:30 AM to 11:00 PM.")
-            return redirect('employee_dashboard')
-
         request.user.current_session_start = now
         request.user.last_timer_date = now.date() # Track the date
         request.user.save()
@@ -220,10 +206,10 @@ def submit_report(request):
             request.user.save()
 
         now = timezone.localtime()
-        # Enforce 1 report per day limit
-        reports_today = DailyReport.objects.filter(user=request.user, date=now.date()).count()
-        if reports_today >= 1:
-            messages.error(request, "You have already submitted a report today.")
+        # Enforce 3 reports per day limit
+        reports_today = DailyReport.objects.filter(user=request.user, created_at__date=now.date()).count()
+        if reports_today >= 3:
+            messages.error(request, "You have already submitted 3 reports today.")
             return redirect('employee_dashboard')
 
         form = DailyReportForm(request.POST)
@@ -239,6 +225,7 @@ def submit_report(request):
                 messages.error(request, f"Submission error: {str(e)}")
     else:
         form = DailyReportForm(initial={
+            'date': timezone.localtime().date(),
             'hours_worked': duration,
             'work_duration_calc': duration_str
         })
