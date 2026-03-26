@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -51,7 +52,7 @@ class DailyReport(models.Model):
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports')
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField(default=timezone.now)
     work_description = models.TextField()
     hours_worked = models.DecimalField(max_digits=4, decimal_places=2)
     work_duration_calc = models.CharField(max_length=20, null=True, blank=True)

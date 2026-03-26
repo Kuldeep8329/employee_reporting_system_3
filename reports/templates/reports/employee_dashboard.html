@@ -55,7 +55,7 @@
                                 <i class="fas fa-pause me-2"></i> Pause Work
                             </button>
                         </form>
-                        <button id="submit-work-btn" class="btn btn-primary py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;" {% if has_submitted_today %}disabled title="You have already submitted a report today."{% endif %}>
+                        <button id="submit-work-btn" class="btn btn-primary py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;">
                             <i class="fas fa-paper-plane me-2"></i> Submit My Work
                         </button>
                     </div>
@@ -66,17 +66,13 @@
                     <div class="d-flex justify-content-center gap-3">
                         <form id="start-timer-form" method="post" action="{% url 'start_timer' %}">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-success py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;" {% if has_submitted_today %}disabled title="Daily report already submitted"{% endif %}>
+                            <button type="submit" class="btn btn-success py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;">
                                 <i class="fas fa-play me-2"></i> 
                                 {% if user.accumulated_ms > 0 %}Resume Work{% else %}Start Work Time{% endif %}
                             </button>
                         </form>
                     </div>
-                    {% if has_submitted_today %}
-                        <p class="text-warning mt-3 small fw-bold"><i class="fas fa-info-circle me-1"></i> You have already submitted your daily report.</p>
-                    {% else %}
-                        <p class="text-white-50 mt-3 small">You do not currently have an active work session.</p>
-                    {% endif %}
+                    <p class="text-white-50 mt-3 small">You do not currently have an active work session.</p>
                 {% endif %}
             </div>
         </div>
