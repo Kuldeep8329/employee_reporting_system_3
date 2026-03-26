@@ -168,7 +168,16 @@
 
         <!-- SweetAlert2 Toast for Django Messages -->
         {% if messages %}
-        {{ messages|json_script:"django-messages" }}
+        <script id="django-messages" type="application/json">
+            [
+                {% for message in messages %}
+                {
+                    "message": "{{ message|escapejs }}",
+                    "tags": "{{ message.tags|default:''|escapejs }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ]
+        </script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const messages = JSON.parse(document.getElementById('django-messages').textContent);

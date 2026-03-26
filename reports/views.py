@@ -101,13 +101,13 @@ def employee_dashboard(request):
     if request.method == 'POST':
         form = DailyReportForm(request.POST)
         if form.is_valid():
-            report = form.save(commit=False)
-            report.user = request.user
-            report.save()
-            # Clear session start after successful submission if needed, 
-            # but user says "timer stops on logout", so we might keep it or reset it.
-            # For now, let's just save.
-            return redirect('employee_dashboard')
+            try:
+                report = form.save(commit=False)
+                report.user = request.user
+                report.save()
+                return redirect('employee_dashboard')
+            except Exception as e:
+                messages.error(request, f"Error saving report: {str(e)}")
 
     # Enforce 1 report per day logic for UI
     has_submitted_today = DailyReport.objects.filter(user=request.user, date=today).exists()
@@ -166,12 +166,15 @@ def heartbeat(request):
             
             request.user.current_session_start = now # Reset start to NOW for next window
         
-        request.user.save()
-        return JsonResponse({
-            'status': 'ok', 
-            'accumulated_ms': request.user.accumulated_ms,
-            'session_start_iso': request.user.current_session_start.isoformat() if request.user.current_session_start else ""
-        })
+        try:
+            request.user.save()
+            return JsonResponse({
+                'status': 'ok', 
+                'accumulated_ms': request.user.accumulated_ms,
+                'session_start_iso': request.user.current_session_start.isoformat() if request.user.current_session_start else ""
+            })
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
@@ -225,12 +228,15 @@ def submit_report(request):
 
         form = DailyReportForm(request.POST)
         if form.is_valid():
-            report = form.save(commit=False)
-            report.user = request.user
-            report.status = 'pending'
-            report.save()
-            messages.success(request, "Report submitted successfully! Waiting for approval.")
-            return redirect('employee_dashboard')
+            try:
+                report = form.save(commit=False)
+                report.user = request.user
+                report.status = 'pending'
+                report.save()
+                messages.success(request, "Report submitted successfully! Waiting for approval.")
+                return redirect('employee_dashboard')
+            except Exception as e:
+                messages.error(request, f"Submission error: {str(e)}")
     else:
         form = DailyReportForm(initial={
             'hours_worked': duration,
