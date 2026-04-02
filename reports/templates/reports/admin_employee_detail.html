@@ -1,105 +1,159 @@
 {% extends "reports/base.html" %}
 
-{% block title %}{% if employee.role == 'team_leader' %}Leader{% else %}Employee{% endif %} Details - {{ employee.get_full_name|default:employee.username }}{% endblock %}
+{% block title %}{% if employee.role == 'team_leader' %}Leader{% else %}Employee{% endif %} Profile — Global Audit{% endblock %}
 
 {% block content %}
-<div class="row align-items-center mb-4">
-    <div class="col-md-6">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-transparent p-0 mb-2">
-                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}">All Groups</a></li>
+<div class="row align-items-end mb-5 animate-slide-up" style="animation-delay: 0.1s;">
+    <div class="col-lg-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb bg-transparent p-0 m-0 text-muted tiny fw-black text-uppercase tracking-widest">
+                <li class="breadcrumb-item"><a href="{% url 'admin_dashboard' %}" class="text-decoration-none text-muted">CENTRAL HUB</a></li>
                 <li class="breadcrumb-item">
                     {% if employee.team %}
-                    <a href="{% url 'admin_team_detail' employee.team.id %}">{{ employee.team.name }}</a>
+                    <a href="{% url 'admin_team_detail' employee.team.id %}" class="text-decoration-none text-muted">UNIT: {{ employee.team.name }}</a>
                     {% else %}
-                    Unassigned
+                    UNASSIGNED
                     {% endif %}
                 </li>
             </ol>
         </nav>
-        <div class="d-flex align-items-center gap-3">
-            {% if employee.profile_photo %}
-            <div class="rounded-circle overflow-hidden border border-3 border-primary shadow-sm" style="width: 80px; height: 80px; flex-shrink: 0;">
-                <img src="{{ employee.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
+        <div class="d-flex align-items-center gap-4">
+            <div class="position-relative">
+                <div class="rounded-circle border border-4 border-white shadow-sm overflow-hidden" style="width: 100px; height: 100px; background: #f8fafc;">
+                    {% if employee.profile_photo %}
+                        <img src="{{ employee.profile_photo.url }}" class="w-100 h-100 object-fit-cover shadow-sm">
+                    {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-{% if employee.role == 'team_leader' %}crown{% else %}user-astronaut{% endif %} fa-2x"></i>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            {% else %}
-            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold; flex-shrink: 0;">
-                {{ employee.username|first|upper }}
-            </div>
-            {% endif %}
             <div>
-                <h2 class="fw-bold text-primary mb-1">{% if employee.role == 'team_leader' %}Leader{% else %}Employee{% endif %}: {{ employee.get_full_name|default:employee.username }}</h2>
-                <p class="text-muted small mb-0">Viewing individual performance and reports.</p>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="fw-black text-dark mb-0" style="font-size: 2.2rem; letter-spacing: -0.04em;">{{ employee.get_full_name|default:employee.username }}</h1>
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted">
+                    <span class="fw-bold small text-uppercase tracking-wider"><i class="fas fa-shield-check me-1 opacity-50"></i> STATUS: SECURE</span>
+                    <span class="opacity-25">|</span>
+                    <span class="fw-bold small text-uppercase tracking-wider"><i class="fas fa-database me-1 opacity-50"></i> ARCHIVE LINKED</span>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 text-md-end">
-        <div class="dropdown d-inline-block me-2">
-            <button class="btn btn-outline-danger btn-sm fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-file-pdf me-1"></i> PDF
-            </button>
-            <ul class="dropdown-menu shadow-sm border-0">
-                <li><a class="dropdown-item" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-primary me-2"></i> Today</a></li>
-                <li><a class="dropdown-item" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-primary me-2"></i> Last 7 Days</a></li>
-                <li><a class="dropdown-item" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-primary me-2"></i> Last 30 Days</a></li>
-                <li><a class="dropdown-item fw-bold" href="{% url 'export_pdf' %}?user_id={{ employee.id }}"><i class="fas fa-infinity text-primary me-2"></i> All Time</a></li>
-            </ul>
-        </div>
-        <div class="dropdown d-inline-block">
-            <button class="btn btn-outline-success btn-sm fw-bold dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-file-excel me-1"></i> Excel
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                <li><a class="dropdown-item" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-primary me-2"></i> Today</a></li>
-                <li><a class="dropdown-item" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-primary me-2"></i> Last 7 Days</a></li>
-                <li><a class="dropdown-item" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-primary me-2"></i> Last 30 Days</a></li>
-                <li><a class="dropdown-item fw-bold" href="{% url 'export_excel' %}?user_id={{ employee.id }}"><i class="fas fa-infinity text-primary me-2"></i> All Time</a></li>
-            </ul>
+    <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+        <div class="d-inline-flex gap-2">
+            <div class="dropdown">
+                <button class="btn btn-dark fw-black rounded-pill px-4 py-2 border-0 shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background: #000; font-size: 0.85rem;">
+                    <i class="fas fa-file-pdf me-2 text-danger"></i> PDF EXPORT
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" style="border-radius: 18px; min-width: 200px; z-index: 3001;">
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-danger me-2 opacity-50"></i> Today</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-danger me-2 opacity-50"></i> Last 7 Cycles</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-danger me-2 opacity-50"></i> Last 30 Cycles</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase fw-bold" href="{% url 'export_pdf' %}?user_id={{ employee.id }}"><i class="fas fa-infinity text-danger me-2 opacity-50"></i> TOTAL ARCHIVE</a></li>
+                </ul>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-dark fw-black rounded-pill px-4 py-2 border-0 shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background: #000; font-size: 0.85rem;">
+                    <i class="fas fa-file-excel me-2 text-success"></i> SHEET DATA
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" style="border-radius: 18px; min-width: 200px; z-index: 3001;">
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-success me-2 opacity-50"></i> Today</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-success me-2 opacity-50"></i> Last 7 Cycles</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-success me-2 opacity-50"></i> Last 30 Cycles</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase fw-bold" href="{% url 'export_excel' %}?user_id={{ employee.id }}"><i class="fas fa-infinity text-success me-2 opacity-50"></i> TOTAL ARCHIVE</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="card p-4 shadow-sm border-0 mt-4" style="border-radius: 20px;">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <h5 class="fw-bold text-dark mb-0">Filtered Results</h5>
+<div class="d-flex align-items-center gap-3 mb-5 animate-slide-up" style="animation-delay: 0.2s;">
+    <span class="text-muted tiny fw-black text-uppercase tracking-widest me-2">Scope:</span>
+    <a href="?duration=" class="btn {% if not duration %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if not duration %}background: #000;{% endif %}">Full History</a>
+    <a href="?duration=today" class="btn {% if duration == 'today' %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if duration == 'today' %}background: #000;{% endif %}">Today</a>
+    <a href="?duration=7_days" class="btn {% if duration == '7_days' %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if duration == '7_days' %}background: #000;{% endif %}">7 Days</a>
+    <a href="?duration=30_days" class="btn {% if duration == '30_days' %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if duration == '30_days' %}background: #000;{% endif %}">30 Days</a>
+</div>
+
+<div class="card border-0 shadow-sm animate-slide-up mb-5" style="border-radius: 28px; animation-delay: 0.3s; overflow: hidden; background: #ffffff;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
         <div>
-            <span class="badge {% if duration == 'today' %}bg-primary{% else %}bg-light text-secondary{% endif %}"><a href="?duration=today" class="text-decoration-none text-reset">Today</a></span>
-            <span class="badge {% if duration == '7_days' %}bg-primary{% else %}bg-light text-secondary{% endif %} ms-2"><a href="?duration=7_days" class="text-decoration-none text-reset">Last 7 Days</a></span>
-            <span class="badge {% if duration == '30_days' %}bg-primary{% else %}bg-light text-secondary{% endif %} ms-2"><a href="?duration=30_days" class="text-decoration-none text-reset">Last 30 Days</a></span>
-            <span class="badge {% if not duration %}bg-primary{% else %}bg-light text-secondary{% endif %} ms-2"><a href="?" class="text-decoration-none text-reset">All Time</a></span>
+            <h4 class="fw-black text-dark mb-0"><i class="fas fa-layer-group me-2 opacity-50"></i> Individual Audit Ledger</h4>
+            <p class="text-muted tiny mt-1 mb-0 tracking-widest text-uppercase">Sub-Admin Verified Performance Stream</p>
+        </div>
+        <div class="badge bg-light text-dark rounded-pill px-4 py-2 border fw-black shadow-sm" style="font-size: 0.75rem;">ARCHIVE SYNCHRONIZED</div>
+    </div>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 border-0">
+                <thead>
+                    <tr class="text-uppercase tiny fw-black text-muted bg-light bg-opacity-50" style="letter-spacing: 0.1em; border-bottom: 2px solid #f8fafc;">
+                        <th class="ps-4 py-3 border-0">Timestamp</th>
+                        <th class="py-3 border-0">Shift Activity / Task Description</th>
+                        <th class="py-3 border-0 text-center">Duration</th>
+                        <th class="py-3 border-0 text-center">H-Score</th>
+                        <th class="py-3 pe-4 border-0 text-end">Audit Status</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: 0;">
+                    {% for report in reports %}
+                    <tr style="border-bottom: 1px solid #f8fafc;">
+                        <td class="ps-4 py-4">
+                            <div class="fw-black text-dark" style="font-size: 0.95rem;">{{ report.date|date:"d M, Y" }}</div>
+                            <div class="text-muted tiny text-uppercase mt-1">{{ report.date|date:"D"|upper }}</div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-dark fw-bold" style="max-width: 450px; line-height: 1.4; font-size: 0.95rem;">{{ report.work_description }}</div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="px-3 py-1 rounded-pill bg-light d-inline-flex align-items-center" style="font-size: 0.8rem;">
+                                <span class="fw-black text-muted small">{{ report.work_duration_calc|default:"00:00:00" }}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="fw-black text-primary" style="font-size: 1.1rem;">{{ report.hours_worked }}<span class="tiny ms-1 opacity-50">H</span></div>
+                        </td>
+                        <td class="pe-4 py-4 text-end">
+                            <span class="badge rounded-pill {% if report.status == 'accepted' %}bg-success{% else %}bg-warning{% endif %} bg-opacity-10 {% if report.status == 'accepted' %}text-success{% else %}text-warning{% endif %} px-3 py-2 fw-black border {% if report.status == 'accepted' %}border-success{% else %}border-warning{% endif %} border-opacity-10" style="font-size: 0.65rem;">
+                                {{ report.status|upper }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="py-5 text-center">
+                            <p class="text-muted small fw-black text-uppercase opacity-50 mb-0">No archived records detected in current temporal scope.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="bg-light">
-                <tr class="text-muted small fw-bold">
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Session Time</th>
-                    <th>Reported Hours</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for report in reports %}
-                <tr>
-                    <td class="text-muted">{{ report.date|date:"Y-m-d"|default:report.created_at|date:"Y-m-d" }}</td>
-                    <td style="max-width: 400px;" class="text-truncate">{{ report.work_description }}</td>
-                    <td class="text-muted small fw-bold">{{ report.work_duration_calc|default:"--" }}</td>
-                    <td class="fw-semibold">{{ report.hours_worked }}h</td>
-                    <td>
-                        <span class="status-badge status-{{ report.status }}">
-                            {{ report.status|capfirst }}
-                        </span>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center text-muted py-4">No reports found strictly matching filters.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 </div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .fw-black { font-weight: 800; }
+    .tiny { font-size: 0.7rem; font-weight: 700; }
+    .tracking-widest { letter-spacing: 0.15em; }
+
+    .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>
 {% endblock %}

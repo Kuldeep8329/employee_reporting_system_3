@@ -26,6 +26,9 @@ def setup():
     # 1. Subadmin
     subadmin = create_user('Chanakya01', 'Aniket@2004', 'Aniket', 'mali', 'admin')
 
+    # Manager
+    manager = create_user('dev_manager', 'sagar@123', 'Sagar', 'Manager', 'manager')
+
     # 2. Teams and their Leaders/Employees
     teams_data = [
         {
@@ -50,7 +53,7 @@ def setup():
             'name': 'Dev Team',
             'leader': {'username': 'Dev_ld', 'password': 'Khushal@123', 'first_name': 'Khushal', 'last_name': 'Mali'},
             'employees': [
-                {'username': 'Dev-01', 'password': 'Goutham@121', 'first_name': 'Rohini', 'last_name': 'Ganukonda'},
+                {'username': 'Dev-01', 'password': 'Goutham@121', 'first_name': 'Rohini', 'last_name': 'Gunukonda'},
                 {'username': 'Dev-02', 'password': 'Neha@20', 'first_name': 'Neha', 'last_name': 'Ingale'},
                 {'username': 'Dev-03', 'password': 'Durgesh07', 'first_name': 'Durgesh', 'last_name': 'Suryavanshi'},
             ]

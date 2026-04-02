@@ -4,34 +4,92 @@
 {% block title %}Employee Dashboard{% endblock %}
 
 {% block content %}
-<div class="row align-items-center mb-4">
-    <div class="col-md-8">
+<!-- Premium Employee Header -->
+<div class="row align-items-center mb-5 animate-slide-up">
+    <div class="col-md-9">
         <div class="d-flex align-items-center gap-4">
             <div class="position-relative">
-                {% if user.profile_photo %}
-                <div class="rounded-circle overflow-hidden border border-3 border-primary shadow-lg bg-light d-flex align-items-center justify-content-center" style="width: 115px; height: 115px; flex-shrink: 0;">
-                    <img src="{{ user.profile_photo.url }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; display: block;">
+                <div class="profile-card-orbit">
+                    <div class="rounded-circle overflow-hidden border border-4 border-white shadow-lg d-flex align-items-center justify-content-center" style="width: 110px; height: 110px; background: white; transition: all 0.5s ease;">
+                        {% if user.profile_photo %}
+                            <img src="{{ user.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 5%;">
+                        {% else %}
+                            <div class="bg-dark text-white w-100 h-100 d-flex align-items-center justify-content-center" style="font-size: 3rem;">
+                                <i class="fas fa-user-astronaut"></i>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                {% else %}
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-lg" style="width: 115px; height: 115px; font-size: 3rem; font-weight: bold;">
-                    {{ user.username|first|upper }}
-                </div>
-                {% endif %}
-                
                 {% if user.team.logo %}
-                <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 shadow-sm border border-light" style="width: 35px; height: 35px; transform: translate(10%, 10%);">
+                <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 shadow-sm border border-light pulse-team" style="width: 38px; height: 38px; transform: translate(5%, 5%); z-index: 2;">
                     <img src="{{ user.team.logo.url }}" alt="Team Logo" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 {% endif %}
             </div>
             <div>
-                <h2 class="fw-bold text-primary mb-1">Welcome, {{ user.get_full_name|default:user.username }}!</h2>
-                <p class="text-muted mb-0"><i class="fas fa-users-cog me-1"></i> {{ user.team.name|default:"General Core" }} • {{ user.get_role_display }}</p>
-                <div class="mt-2">
-                    {% if user.is_online %}
-                    <span class="badge bg-success rounded-pill px-3"><i class="fas fa-circle me-1" style="font-size: 0.6rem;"></i> Online</span>
+                <h1 class="fw-black mb-1" style="font-size: 2.2rem; letter-spacing: -0.04em; color: #000;">
+                    Hello, <span style="color: #00d8ff;">{{ user.get_full_name|default:user.username }}</span>
+                </h1>
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <span class="badge bg-dark rounded-pill px-3 py-2 fw-black small" style="letter-spacing: 0.05em;">{{ user.team.name|default:"CORE OPERATIVE"|upper }}</span>
+                    <span class="text-muted fw-bold small opacity-75">• {{ user.get_role_display|upper }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mission Control Timer -->
+<div class="row mb-5 animate-slide-up" style="animation-delay: 0.1s;">
+    <div class="col-lg-12">
+        <div class="card border-0 shadow-lg py-4 px-5 overflow-hidden position-relative" style="border-radius: 30px; background: linear-gradient(145deg, #000 0%, #1e293b 100%); color: white;">
+            <div class="position-absolute top-0 end-0 p-4 opacity-10">
+                <i class="fas fa-clock fa-7x"></i>
+            </div>
+            <div class="card-body position-relative z-1 text-center">
+                <p class="text-white-50 mb-3 fw-black small tracking-widest">ACTIVE MISSION DURATION</p>
+                
+                <div class="timer-container mb-4">
+                    <h1 id="live-timer" class="display-2 fw-black mb-0 mb-md-1" style="font-family: 'Inter', sans-serif; letter-spacing: -2px; color: #fff;">00:00:00</h1>
+                    <div class="d-flex justify-content-center gap-2">
+                        <span class="badge bg-info-subtle text-info border border-info rounded-pill px-3 py-1 fw-bold" style="font-size: 0.65rem;">SYSTEM SYNCED</span>
+                        {% if session_start_iso %}
+                        <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3 py-1 fw-bold pulse-badge" style="font-size: 0.65rem;">LIVE TRACKING</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    {% if session_start_iso %}
+                        <form method="post" action="{% url 'pause_timer' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning rounded-pill py-3 px-5 fw-black shadow-lg border-0 hover-lift" style="font-size: 0.85rem; letter-spacing: 0.1em; background: #fbbf24; color: #000;">
+                                PAUSE SESSION
+                            </button>
+                        </form>
+                        <button id="submit-work-btn" class="btn btn-info rounded-pill py-3 px-5 fw-black shadow-lg border-0 hover-lift" style="font-size: 0.85rem; letter-spacing: 0.1em; background: #00d8ff; color: #000;">
+                            SUBMIT MISSION LOG
+                        </button>
                     {% else %}
-                    <span class="badge bg-secondary rounded-pill px-3">Offline</span>
+                        <form id="start-timer-form" method="post" action="{% url 'start_timer' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn rounded-pill py-3 px-5 fw-black shadow-lg border-0 hover-lift" style="font-size: 0.85rem; letter-spacing: 0.1em; background: #fff; color: #000;">
+                                {% if user.accumulated_ms > 0 %}RESUME LOGGING{% else %}DEPART FOR WORK{% endif %}
+                            </button>
+                        </form>
+                        {% if user.accumulated_ms > 0 %}
+                        <button id="submit-work-btn" class="btn btn-outline-light rounded-pill py-3 px-5 fw-black border-2 hover-glow" style="font-size: 0.85rem; letter-spacing: 0.1em;">
+                            FINALIZE ENTRY
+                        </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div id="timer-status-text" class="text-white-50 mt-3 small fw-bold opacity-50">
+                    {% if first_start_iso %}
+                        DEPLOYMENT TIME: <span id="start-time-display">--:--</span>
+                    {% elif not session_start_iso %}
+                        NO ACTIVE SESSION DETECTED
                     {% endif %}
                 </div>
             </div>
@@ -39,131 +97,187 @@
     </div>
 </div>
 
-<div class="row mb-5">
-    <!-- Real-time Timer Section -->
-    <div class="col-lg-12">
-        <div class="card p-4 shadow-sm text-center" style="border-radius: 24px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white;">
-            <div class="card-body">
-                <h5 class="text-white-50 mb-3 fw-bold small text-uppercase tracking-wider">Current Work Session</h5>
-                {% if session_start_iso %}
-                    <h1 id="live-timer" class="display-3 fw-bold mb-4" style="font-family: 'Courier New', Courier, monospace;">00:00:00</h1>
-                    
-                    <div class="d-flex justify-content-center gap-3">
-                        <form method="post" action="{% url 'pause_timer' %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-warning py-3 px-4 fw-bold shadow-sm" style="border-radius: 12px; font-size: 1.1rem;">
-                                <i class="fas fa-pause me-2"></i> Pause Work
-                            </button>
-                        </form>
-                        <button id="submit-work-btn" class="btn btn-primary py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;">
-                            <i class="fas fa-paper-plane me-2"></i> Submit My Work
-                        </button>
-                    </div>
-                    <p class="text-white-50 mt-3 small">Timer started at: <span id="start-time-display">--:--</span></p>
-                {% else %}
-                    <h1 id="live-timer" class="display-3 fw-bold mb-4 text-white-50" style="font-family: 'Courier New', Courier, monospace;">00:00:00</h1>
-                    
-                    <div class="d-flex justify-content-center gap-3">
-                        <form id="start-timer-form" method="post" action="{% url 'start_timer' %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success py-3 px-5 fw-bold shadow-lg" style="border-radius: 12px; font-size: 1.1rem;">
-                                <i class="fas fa-play me-2"></i> 
-                                {% if user.accumulated_ms > 0 %}Resume Work{% else %}Start Work Time{% endif %}
-                            </button>
-                        </form>
-                    </div>
-                    <p class="text-white-50 mt-3 small">You do not currently have an active work session.</p>
-                {% endif %}
-            </div>
+<!-- History & Archives -->
+<div class="card border-0 shadow-sm mb-5 animate-slide-up overflow-hidden" style="border-radius: 30px; animation-delay: 0.2s; background: #ffffff;">
+    <div class="card-header bg-white border-0 py-4 px-4 d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="fw-black text-dark mb-1">Mission Log Repository</h4>
+            <p class="text-muted tiny mb-0 fw-bold opacity-50 text-uppercase tracking-widest">Historical Performance Timeline</p>
+        </div>
+        <div class="badge bg-dark text-white rounded-pill px-4 py-2 border-0 fw-black shadow-sm" style="font-size: 0.75rem;">{{ reports.count }} Cycles Recorded</div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
+                <thead>
+                    <tr class="bg-light text-uppercase tiny fw-black text-muted" style="letter-spacing: 0.1em; border-bottom: 2px solid #f1f5f9;">
+                        <th class="ps-5 py-4 border-0">Timeline Date</th>
+                        <th class="py-4 border-0" style="width: 45%;">Mission Insight</th>
+                        <th class="py-4 border-0 text-center">Work Output</th>
+                        <th class="pe-5 py-4 border-0 text-end">Validation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr class="mission-row" style="transition: all 0.3s ease; border-bottom: 1px solid #f1f5f9;">
+                        <td class="ps-5 py-4">
+                            <div class="fw-black text-dark" style="font-size: 1.05rem;">{{ report.date|date:"d M, Y" }}</div>
+                            <div class="text-muted tiny fw-bold opacity-75">{{ report.date|date:"l"|upper }}</div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-dark fw-bold pe-4" style="line-height: 1.6; font-size: 0.95rem; opacity: 0.9;">
+                                {{ report.work_description }}
+                            </div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="d-inline-block text-center">
+                                <div class="fw-black text-dark" style="font-size: 1.1rem; letter-spacing: -0.5px;">{{ report.hours_worked }} Hours</div>
+                                <div class="badge bg-light text-muted tiny border-0 fw-black mt-1" style="font-size: 0.6rem;">SYNCED: {{ report.work_duration_calc|default:"00:00:00" }}</div>
+                            </div>
+                        </td>
+                        <td class="pe-5 py-4 text-end">
+                            {% if report.status == 'pending' %}
+                                <span class="badge bg-warning-subtle text-warning rounded-pill px-4 py-2 fw-black border border-warning-subtle" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                    <i class="fas fa-satellite-dish me-2 tiny"></i> IN REVIEW
+                                </span>
+                            {% elif report.status == 'accepted' %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-4 py-2 fw-black border border-success-subtle" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                    <i class="fas fa-check-double me-2 tiny"></i> VALIDATED
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-4 py-2 fw-black border border-danger-subtle" style="font-size: 0.7rem; letter-spacing: 1px;">
+                                    {{ report.status|upper }}
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted fw-bold italic letter-spacing-1 h-100">NO MISSION DATA DETECTED IN CURRENT TIMELINE</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <!-- Recent Reports History -->
-    <div class="col-lg-12">
-        <div class="card p-3 shadow-sm" style="border-radius: 16px;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0 text-primary">Your Recent Activity</h4>
-                    <span class="badge bg-light text-muted p-2 rounded-pill px-3">{{ reports.count }} Reports</span>
-                </div>
-                
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="bg-light">
-                            <tr class="text-muted small fw-bold">
-                                <th>Date</th>
-                                <th>Description</th>
-                                <th>Calculated Time</th>
-                                <th>Entered Hours</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for report in reports %}
-                            <tr>
-                                <td class="fw-semibold">{{ report.date|date:"M d, Y" }}</td>
-                                <td style="max-width: 400px;" class="text-truncate">{{ report.work_description }}</td>
-                                <td class="text-muted small fw-bold">{{ report.work_duration_calc|default:"--" }}</td>
-                                <td class="fw-bold">{{ report.hours_worked }}h</td>
-                                <td>
-                                    {% if report.status == 'pending' %}
-                                        <span class="status-badge status-submitted"><i class="fas fa-clock me-1"></i> Pending</span>
-                                    {% elif report.status == 'accepted' %}
-                                        <span class="status-badge status-leader"><i class="fas fa-check-double me-1"></i> Accepted</span>
-                                    {% else %}
-                                        <span class="status-badge status-rejected">{{ report.status|capfirst }}</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">No reports submitted yet.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+    .mission-row:hover {
+        background: #fbfcfe;
+    }
+    .mission-row:last-child {
+        border-bottom: none !important;
+    }
+</style>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .fw-black { font-weight: 800; }
+    .tiny { font-size: 0.65rem; font-weight: 700; }
+    .bg-faint { background-color: #fbfcfe; }
+
+    .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        filter: brightness(1.1);
+        box-shadow: 0 15px 30px -10px rgba(0, 216, 255, 0.5) !important;
+    }
+
+    .pulse-badge {
+        animation: pulseFade 2s infinite;
+    }
+
+    @keyframes pulseFade {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .bg-success-subtle { background-color: #dcfce7; }
+    .bg-info-subtle { background-color: #e0f2fe; }
+    .bg-warning-subtle { background-color: #fef3c7; }
+    .bg-danger-subtle { background-color: #fee2e2; }
+
+    .hover-glow:hover {
+        border-color: #fff !important;
+        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+</style>
 
 <!-- JavaScript for Timer logic -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const storageKey = 'timer_user_' + "{{ user.id }}";
         const startTimeStr = "{{ session_start_iso }}";
-        let accumulatedMsFromDB = parseInt("{{ accumulated_ms|default:0|stringformat:'d' }}") || 0;
+        const firstStartStr = "{{ first_start_iso }}";
+        const serverNowStr = "{{ server_now_iso }}";
         
+        let accumulatedMsFromDB = parseInt("{{ accumulated_ms|default:0|stringformat:'d' }}") || 0;
         let currentSessionStartTime = startTimeStr ? new Date(startTimeStr) : null;
-        if (currentSessionStartTime) {
-            const startTimeDisplay = document.getElementById('start-time-display');
-            if(startTimeDisplay) startTimeDisplay.innerText = currentSessionStartTime.toLocaleTimeString();
+        
+        // --- Clock Drift Correction ---
+        // Calculate difference between server time and client time
+        let clockOffset = 0;
+        if (serverNowStr) {
+            clockOffset = new Date(serverNowStr).getTime() - new Date().getTime();
         }
 
+        if (firstStartStr) {
+            const initialStartTime = new Date(firstStartStr);
+            const startTimeDisplay = document.getElementById('start-time-display');
+            if(startTimeDisplay) startTimeDisplay.innerText = initialStartTime.toLocaleTimeString();
+        }
+        
         // Global function to allow heartbeat to sync time from server
-        window.updateAccumulatedTime = function(newMs, newStartTimeStr) {
+        window.updateAccumulatedTime = function(newMs, newStartTimeStr, newServerNowStr) {
             accumulatedMsFromDB = newMs;
-            if (newStartTimeStr) {
-                // Update global startTime variable that the updateTimer closure uses
-                // Note: We need to make startTime a let instead of a const at the top scope
-                currentSessionStartTime = new Date(newStartTimeStr);
+            // CRITICAL: Explicitly set to null if server says session is stopped/paused
+            currentSessionStartTime = newStartTimeStr ? new Date(newStartTimeStr) : null;
+            
+            if (newServerNowStr) {
+                // Recalibrate clock offset on every heartbeat
+                clockOffset = new Date(newServerNowStr).getTime() - new Date().getTime();
             }
-            updateTimer(); // Refresh UI immediately
+            updateTimer(); 
         };
 
+        let lastUpdateDate = new Date(new Date().getTime() + clockOffset).getDate();
+
         function updateTimer() {
-            const now = new Date();
-            // Start with time from database
-            let totalDiff = accumulatedMsFromDB;
+            // "True" now (Server-approximated)
+            const now = new Date(new Date().getTime() + clockOffset);
             
-            // Add time if a session is currently active
+            // --- Midnight Flip Check ---
+            // If the date shifts while the tab is open, force reload to reset state
+            if (now.getDate() !== lastUpdateDate) {
+                location.reload();
+                return;
+            }
+
+            let totalDiff = accumulatedMsFromDB;
             if (currentSessionStartTime) {
                 totalDiff += (now - currentSessionStartTime);
             }
-            
             if (totalDiff < 0) totalDiff = 0;
 
             const hours = Math.floor(totalDiff / (1000 * 60 * 60));
@@ -175,9 +289,9 @@
                 String(minutes).padStart(2, '0') + ":" + 
                 String(seconds).padStart(2, '0');
 
-            document.getElementById('live-timer').innerText = displayStr;
+            const timerEl = document.getElementById('live-timer');
+            if (timerEl) timerEl.innerText = displayStr;
             
-            // Decimal hours for the report (e.g. 1.50)
             const totalHours = (totalDiff / (1000 * 60 * 60)).toFixed(2);
             window.currentWorkHours = totalHours;
             window.currentTimerStr = displayStr;
@@ -186,33 +300,25 @@
         setInterval(updateTimer, 1000);
         updateTimer();
 
-        if (document.getElementById('submit-work-btn')) {
-            document.getElementById('submit-work-btn').addEventListener('click', function() {
-                const btn = this;
-                
-                // Show loading state
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
+        // Submit Button Logic
+        const submitBtn = document.getElementById('submit-work-btn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Submitting...';
                 
                 const duration = window.currentWorkHours || '0.0';
                 const timerStr = window.currentTimerStr || '00:00:00';
-                const url = `{% url 'submit_report' %}?duration=${duration}&timer=${timerStr}`;
-                
-                // Final submission fully clears local accumulated time
-                localStorage.removeItem(storageKey + '_accumulated');
-                localStorage.removeItem(storageKey + '_lastTick');
-                
-                // Go directly to submission page — it will stop the timer on the server
-                window.location.href = url;
+                window.location.href = `{% url 'submit_report' %}?duration=${duration}&timer=${timerStr}`;
             });
         }
 
         // Reset button state if user comes back to this page (e.g. back button)
         window.addEventListener('pageshow', function(event) {
             const btn = document.getElementById('submit-work-btn');
-            if (btn && btn.disabled) {
+            if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Submit My Work';
+                btn.innerHTML = 'SUBMIT MISSION LOG';
             }
         });
     });

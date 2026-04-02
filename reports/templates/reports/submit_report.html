@@ -4,41 +4,48 @@
 {% block title %}Submit Daily Report{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card p-4 shadow-sm" style="border-radius: 20px;">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h2 class="fw-bold text-primary mb-0">devNector Work Submission</h2>
-                    <div class="text-end">
-                        <span class="badge bg-light text-primary p-2 fs-6 border" style="border-radius: 10px;">
-                            Total Time: <span class="fw-bold">{{ duration_str }}</span>
-                        </span>
-                    </div>
+<div class="row justify-content-center animate-fade-in">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 30px; background: #ffffff;">
+            <div class="card-header border-0 py-5 text-center" style="background: linear-gradient(135deg, #000 0%, #1e293b 100%);">
+                <p class="text-white-50 tiny fw-black tracking-widest mb-2">MISSION COMPLETION PHASE</p>
+                <h2 class="fw-black text-white mb-0" style="letter-spacing: -0.02em;">Finalize Your Log</h2>
+                <div class="mt-4">
+                    <span class="badge bg-white bg-opacity-10 text-white rounded-pill px-4 py-2 border border-white border-opacity-25" style="font-size: 0.8rem;">
+                        <i class="fas fa-clock me-2 opacity-50"></i> RECORDED TIME: <span class="fw-black" style="color: #00d8ff;">{{ duration_str }}</span>
+                    </span>
                 </div>
-                
-                <p class="text-muted mb-5">Please provide details of the work completed during this session.</p>
+            </div>
+            
+            <div class="card-body p-5">
+                <p class="text-muted text-center mb-5 fw-bold small opacity-75">Submit your work parameters to synchronize with the core database.</p>
 
-                <form method="post">
+                <form method="post" id="mission-log-form">
                     {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                             {{ form.date|as_crispy_field }}
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                             <label class="form-label text-dark fw-black small mb-2 ms-1"><i class="fas fa-lock me-1 opacity-50"></i> MISSION DATE</label>
+                             <div class="input-group-custom">
+                                 {{ form.date|as_crispy_field }}
+                             </div>
                         </div>
-                        <div class="col-md-12 mb-3">
+                        <div class="col-md-12">
+                             <label class="form-label text-dark fw-black small mb-2 ms-1">TACTICAL DESCRIPTION</label>
                              {{ form.work_description|as_crispy_field }}
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12">
+                             <label class="form-label text-dark fw-black small mb-2 ms-1"><i class="fas fa-lock me-1 opacity-50"></i> SESSION DURATION <span class="text-muted fw-normal">(READ-ONLY)</span></label>
                              {{ form.hours_worked|as_crispy_field }}
-                             <small class="text-muted">You can adjust the hours if needed.</small>
+                             <p class="tiny text-muted mt-2 ms-1">System verified exactly ~{{ duration_str|slice:":5" }} hours work time.</p>
                         </div>
                         {{ form.work_duration_calc }}
                     </div>
                     
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary py-3 fw-bold shadow-sm" id="final-submit-btn">
-                            Submit Final Report & Finish Session
+                    <div class="mt-5 text-center">
+                        <button type="submit" class="btn btn-dark w-100 py-4 fw-black shadow-lg border-0 hover-lift" id="final-submit-btn" style="border-radius: 20px; background: #000; letter-spacing: 0.1em; font-size: 1rem;">
+                            SYNCHRONIZE MISSION LOG
                         </button>
+                        <p class="tiny text-muted mt-4">By submitting, you finalize all active session data for this cycle.</p>
                     </div>
                 </form>
             </div>
@@ -46,14 +53,63 @@
     </div>
 </div>
 
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .fw-black { font-weight: 800; }
+    .tiny { font-size: 0.65rem; font-weight: 700; }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2) !important;
+    }
+
+    /* Override Crispy Forms for better look */
+    .form-control, .form-select {
+        border-radius: 12px !important;
+        padding: 12px 18px !important;
+        border: 2px solid #f1f5f9 !important;
+        background: #f8fafc !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .form-control:focus {
+        border-color: #00d8ff !important;
+        background: #fff !important;
+        box-shadow: 0 0 0 4px rgba(0, 216, 255, 0.1) !important;
+    }
+
+    .asteriskField { display: none; }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
+        const form = document.getElementById('mission-log-form');
         const btn = document.getElementById('final-submit-btn');
         
         form.addEventListener('submit', function() {
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Syncing to Cloud...';
+            btn.innerHTML = '<i class="fas fa-satellite fa-spin me-3"></i> SYNCHRONIZING TO CLOUD...';
+            btn.style.opacity = '0.7';
         });
     });
 </script>

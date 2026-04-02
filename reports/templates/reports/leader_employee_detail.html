@@ -1,149 +1,265 @@
 {% extends "reports/base.html" %}
 
-{% block title %}{{ employee.get_full_name|default:employee.username }} — Employee Report{% endblock %}
+{% block title %}{{ employee.get_full_name|default:employee.username }} — Digital Performance Audit{% endblock %}
 
 {% block content %}
-<div class="row align-items-center mb-4">
-    <div class="col-md-7">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb bg-transparent p-0 mb-2">
-                <li class="breadcrumb-item"><a href="{% url 'team_leader_dashboard' %}">Leader Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ employee.get_full_name|default:employee.username }}</li>
-            </ol>
-        </nav>
-        <div class="d-flex align-items-center gap-3">
-            {% if employee.profile_photo %}
-            <div class="rounded-circle overflow-hidden border border-3 border-primary shadow-sm" style="width: 70px; height: 70px; flex-shrink: 0;">
-                <img src="{{ employee.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
+<div class="row align-items-end mb-5 animate-slide-up" style="animation-delay: 0.1s;">
+    <div class="col-lg-8">
+        <div class="d-flex align-items-center gap-4">
+            <div class="position-relative">
+                <div class="rounded-circle border border-4 border-white shadow-sm overflow-hidden" style="width: 100px; height: 100px; background: #f8fafc;">
+                    {% if employee.profile_photo %}
+                        <img src="{{ employee.profile_photo.url }}" class="w-100 h-100 object-fit-cover shadow-sm">
+                    {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary">
+                            <i class="fas fa-user-astronaut fa-2x"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <span class="position-absolute bottom-0 end-0 p-2 border border-4 border-white rounded-circle {% if employee.is_currently_online %}bg-success{% else %}bg-danger{% endif %} shadow-sm" style="width: 22px; height: 22px;"></span>
             </div>
-            {% else %}
-            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 70px; height: 70px; font-size: 1.5rem; font-weight: bold; flex-shrink: 0;">
-                {{ employee.username|first|upper }}
-            </div>
-            {% endif %}
             <div>
-                <h2 class="fw-bold text-primary mb-1">{{ employee.get_full_name|default:employee.username }}</h2>
-                <p class="text-muted small mb-0">Team: <span class="fw-bold">{{ team.name }}</span> &nbsp;·&nbsp; Role: Employee</p>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h1 class="fw-black text-dark mb-0" style="font-size: 2.2rem; letter-spacing: -0.04em;">{{ employee.get_full_name|default:employee.username }}</h1>
+                </div>
+                <div class="d-flex align-items-center gap-3 text-muted">
+                    <span class="fw-bold small text-uppercase tracking-wider"><i class="fas fa-users-gear me-1 opacity-50"></i> UNIT: {{ team.name }}</span>
+                    <span class="opacity-25">|</span>
+                    <span class="fw-bold small text-uppercase tracking-wider"><i class="fas fa-shield-halved me-1 opacity-50"></i> ACCESS: STANDARD</span>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+    <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
         <div class="d-inline-flex gap-2">
             <!-- PDF dropdown -->
             <div class="dropdown">
-                <button class="btn btn-outline-danger fw-bold shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-pdf me-1"></i> PDF Report
+                <button class="btn btn-dark fw-black rounded-pill px-4 py-2 border-0 shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background: #000; font-size: 0.85rem;">
+                    <i class="fas fa-file-pdf me-2 text-danger"></i> PDF EXPORT
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-danger me-2"></i> Today</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-danger me-2"></i> Last 7 Days</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-danger me-2"></i> Last 30 Days</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item py-2 fw-bold text-primary" href="{% url 'export_issues_pdf' %}?member_id={{ employee.id }}"><i class="fas fa-bug-slash me-2"></i> Export Issue PDF</a></li>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" style="border-radius: 18px; min-width: 200px; z-index: 3001;">
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-danger me-2 opacity-50"></i> Today</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-danger me-2 opacity-50"></i> Last 7 Cycles</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_pdf' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-danger me-2 opacity-50"></i> Last 30 Cycles</a></li>
+                    <li><hr class="dropdown-divider bg-light opacity-50"></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase text-primary" href="{% url 'export_issues_pdf' %}?member_id={{ employee.id }}"><i class="fas fa-bug-slash me-2 opacity-50"></i> Issue Audit</a></li>
                 </ul>
             </div>
             <!-- Excel dropdown -->
             <div class="dropdown">
-                <button class="btn btn-outline-success fw-bold shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-excel me-1"></i> Excel Report
+                <button class="btn btn-dark fw-black rounded-pill px-4 py-2 border-0 shadow-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background: #000; font-size: 0.85rem;">
+                    <i class="fas fa-file-excel me-2 text-success"></i> SHEET DATA
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-success me-2"></i> Today</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-success me-2"></i> Last 7 Days</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-success me-2"></i> Last 30 Days</a></li>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2" style="border-radius: 18px; min-width: 200px; z-index: 3001;">
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=today"><i class="fas fa-calendar-day text-success me-2 opacity-50"></i> Today</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=7_days"><i class="fas fa-calendar-week text-success me-2 opacity-50"></i> Last 7 Cycles</a></li>
+                    <li><a class="dropdown-item py-2 fw-black small text-uppercase" href="{% url 'export_excel' %}?user_id={{ employee.id }}&duration=30_days"><i class="fas fa-calendar-alt text-success me-2 opacity-50"></i> Last 30 Cycles</a></li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Duration filter tabs -->
-<div class="d-flex gap-2 mb-4">
-    <a href="?duration=" class="btn {% if not duration %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm fw-bold rounded-pill px-4">All Time</a>
-    <a href="?duration=today" class="btn {% if duration == 'today' %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm fw-bold rounded-pill px-4">Today</a>
-    <a href="?duration=7_days" class="btn {% if duration == '7_days' %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm fw-bold rounded-pill px-4">Last 7 Days</a>
-    <a href="?duration=30_days" class="btn {% if duration == '30_days' %}btn-primary{% else %}btn-outline-secondary{% endif %} btn-sm fw-bold rounded-pill px-4">Last 30 Days</a>
+<!-- Temporal Navigation Filters -->
+<div class="d-flex align-items-center gap-3 mb-5 animate-slide-up" style="animation-delay: 0.2s;">
+    <span class="text-muted tiny fw-black text-uppercase tracking-widest me-2">Time-frame:</span>
+    <a href="?duration=" class="btn {% if not duration %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if not duration %}background: #000;{% endif %}">Total Snapshot</a>
+    <a href="?duration=today" class="btn {% if duration == 'today' %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if duration == 'today' %}background: #000;{% endif %}">Active Today</a>
+    <a href="?duration=7_days" class="btn {% if duration == '7_days' %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if duration == '7_days' %}background: #000;{% endif %}">Week Review</a>
+    <a href="?duration=30_days" class="btn {% if duration == '30_days' %}btn-dark shadow-sm{% else %}btn-light text-muted border-0{% endif %} rounded-pill px-4 fw-black tiny text-uppercase tracking-widest border-0" style="{% if duration == '30_days' %}background: #000;{% endif %}">Monthly Pulse</a>
 </div>
 
-<!-- Reports table -->
-<div class="card p-3 shadow-sm border-0" style="border-radius: 16px;">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead class="bg-light">
-                <tr class="text-muted small fw-bold">
-                    <th>Date</th>
-                    <th>Work Description</th>
-                    <th>Session Time</th>
-                    <th>Hours</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for report in reports %}
-                <tr>
-                    <td class="fw-semibold">{{ report.date|date:"M d, Y" }}</td>
-                    <td style="max-width: 380px;" class="text-truncate">{{ report.work_description }}</td>
-                    <td class="text-muted small fw-bold">{{ report.work_duration_calc|default:"--" }}</td>
-                    <td class="fw-bold">{{ report.hours_worked }}h</td>
-                    <td>
-                        <span class="status-badge status-{{ report.status }}">{{ report.status|capfirst }}</span>
-                    </td>
-                    <td>
-                        {% if report.status == 'pending' %}
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'approve_report' report.id %}" class="btn btn-success btn-sm px-3">Approve</a>
-                                <a href="{% url 'reject_report' report.id %}" class="btn btn-danger btn-sm px-3">Reject</a>
+<!-- Performance Dashboard Card -->
+<div class="card border-0 shadow-sm animate-slide-up mb-5" style="border-radius: 28px; animation-delay: 0.3s; overflow: hidden; background: #ffffff;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="fw-black text-dark mb-0"><i class="fas fa-chart-line-up me-2 opacity-50"></i> Performance History</h4>
+            <p class="text-muted tiny mt-1 mb-0 tracking-widest text-uppercase">Validated Session Log Records</p>
+        </div>
+        <div class="badge bg-light text-dark rounded-pill px-4 py-2 border fw-black shadow-sm" style="font-size: 0.75rem;">{{ reports|length }} ENTRIES FOUND</div>
+    </div>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 border-0">
+                <thead>
+                    <tr class="text-uppercase tiny fw-black text-muted bg-light bg-opacity-50" style="letter-spacing: 0.1em; border-bottom: 2px solid #f8fafc;">
+                        <th class="ps-4 py-3 border-0">Execution Date</th>
+                        <th class="py-3 border-0">Work Description / Objectives</th>
+                        <th class="py-3 border-0 text-center">Session Data</th>
+                        <th class="py-3 border-0 text-center">Final Output</th>
+                        <th class="py-3 border-0 text-center">Validation Status</th>
+                        <th class="py-3 pe-4 border-0 text-end">Action Control</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: 0;">
+                    {% for report in reports %}
+                    <tr class="report-row transition-all" style="border-bottom: 1px solid #f8fafc;">
+                        <td class="ps-4 py-4">
+                            <div class="fw-black text-dark" style="font-size: 0.95rem;">{{ report.date|date:"D, d M Y" }}</div>
+                            <div class="text-muted tiny text-uppercase mt-1">{{ report.date|date:"l"|upper }} SHIFT</div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-dark fw-bold" style="max-width: 400px; line-height: 1.4; font-size: 0.95rem;">{{ report.work_description }}</div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="px-3 py-1 rounded-pill bg-light d-inline-flex align-items-center border shadow-none" style="font-size: 0.8rem;">
+                                <i class="fas fa-stopwatch me-2 opacity-50"></i> <span class="fw-black text-muted">{{ report.work_duration_calc|default:"00:00:00" }}</span>
                             </div>
-                        {% else %}
-                            <span class="text-muted small text-capitalize">{{ report.status }}ed</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
-                        No reports found for the selected period.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="fw-black text-primary" style="font-size: 1.1rem;">{{ report.hours_worked }}<span class="tiny opacity-50 ms-1">H</span></div>
+                        </td>
+                        <td class="py-4 text-center">
+                            {% if report.status == 'pending' %}
+                            <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-3 py-2 fw-black border border-warning border-opacity-10" style="font-size: 0.65rem;">
+                                <i class="fas fa-circle-dot me-1 small"></i> AWAITING
+                            </span>
+                            {% elif report.status == 'accepted' %}
+                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2 fw-black border border-success border-opacity-10" style="font-size: 0.65rem;">
+                                <i class="fas fa-check-double me-1 small"></i> VALIDATED
+                            </span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger px-3 py-2 fw-black border border-danger border-opacity-10" style="font-size: 0.65rem;">
+                                <i class="fas fa-ban me-1 small"></i> {{ report.status|upper }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 py-4 text-end">
+                            {% if report.status == 'pending' %}
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'approve_report' report.id %}" class="btn btn-dark btn-sm rounded-pill px-4 fw-black border-0 shadow-sm" style="background: #000; font-size: 0.7rem; letter-spacing: 0.05em;">ACCEPT</a>
+                                <a href="{% url 'reject_report' report.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold border-0" style="font-size: 0.7rem;">REJECT</a>
+                            </div>
+                            {% else %}
+                            <span class="text-muted tiny fw-black text-uppercase opacity-25">ARCHIVED</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-5 text-center">
+                            <div class="py-5">
+                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-folder-open text-muted fa-2x opacity-25"></i>
+                                </div>
+                                <h5 class="fw-black text-dark mb-1">Station Clean</h5>
+                                <p class="text-muted small fw-bold">No performance logs detected for this cycle.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-<h4 class="fw-bold mb-3 mt-5 text-dark">Leave History</h4>
-<div class="card p-3 shadow-sm border-0 mb-5 bg-light bg-opacity-50" style="border-radius: 16px;">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 text-muted small">
-            <thead>
-                <tr class="text-muted small fw-bold">
-                    <th>Dates</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th>Decision Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for leave in leave_history %}
-                <tr>
-                    <td><span class="fw-bold text-dark">{{ leave.start_date }} to {{ leave.end_date }}</span></td>
-                    <td style="max-width: 300px;" class="text-truncate">{{ leave.reason }}</td>
-                    <td>
-                        {% if leave.status == 'approved' %}
-                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">Approved</span>
-                        {% else %}
-                            <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3">Rejected</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ leave.updated_at|date:"M d, Y" }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center py-4 text-muted small">No leave history available for this employee.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+<!-- Attendance & Leave History -->
+<div class="card border-0 shadow-sm animate-slide-up mb-5 bg-faint" style="border-radius: 28px; animation-delay: 0.4s; overflow: hidden; background: #ffffff;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="fw-black text-dark mb-0"><i class="fas fa-umbrella-beach me-2 opacity-50"></i> Attendance & Leave Archive</h4>
+            <p class="text-muted tiny mt-1 mb-0 tracking-widest text-uppercase">Permanent Attendance Compliance Logic</p>
+        </div>
+        <span class="badge bg-light text-dark border rounded-pill px-4 py-2 fw-black shadow-sm" style="font-size: 0.7rem;">LEAVE POLICY V1.2</span>
+    </div>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 border-0">
+                <thead>
+                    <tr class="text-uppercase tiny fw-black text-muted bg-light bg-opacity-50" style="letter-spacing: 0.1em; border-bottom: 2px solid #f8fafc;">
+                        <th class="ps-4 py-3 border-0">Leave Duration</th>
+                        <th class="py-3 border-0">Categorization / Reason</th>
+                        <th class="py-3 border-0 text-center">Status</th>
+                        <th class="py-3 pe-4 border-0 text-end">Audit Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: 0;">
+                    {% for leave in leave_history %}
+                    <tr style="border-bottom: 1px solid #f8fafc;">
+                        <td class="ps-4 py-4">
+                            <div class="fw-black text-dark" style="font-size: 0.95rem;">{{ leave.start_date|date:"d M" }} - {{ leave.end_date|date:"d M, Y" }}</div>
+                            <div class="text-muted tiny text-uppercase mt-1"><i class="fas fa-calendar-lines me-1 opacity-50"></i> OFFICIAL PERIOD</div>
+                        </td>
+                        <td class="py-4">
+                            <div class="text-dark fw-bold opacity-75" style="max-width: 350px; line-height: 1.4; font-size: 0.9rem;">{{ leave.reason }}</div>
+                        </td>
+                        <td class="py-4 text-center">
+                            {% if leave.status == 'approved' %}
+                            <span class="badge rounded-pill bg-success bg-opacity-10 text-success px-3 py-2 fw-black" style="font-size: 0.65rem; border: 1px solid rgba(16, 185, 129, 0.1);">
+                                APPROVED
+                            </span>
+                            {% elif leave.status == 'rejected' %}
+                            <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger px-3 py-2 fw-black" style="font-size: 0.65rem; border: 1px solid rgba(239, 68, 68, 0.1);">
+                                REJECTED
+                            </span>
+                            {% else %}
+                            <span class="badge rounded-pill bg-warning bg-opacity-10 text-warning px-3 py-2 fw-black" style="font-size: 0.65rem; border: 1px solid rgba(245, 158, 11, 0.1);">
+                                AWAITING
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 py-4 text-end">
+                            <div class="text-dark fw-black small">{{ leave.updated_at|date:"d M, Y" }}</div>
+                            <div class="text-muted tiny text-uppercase">VALIDATED</div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-5 text-center">
+                            <p class="text-muted small fw-black text-uppercase opacity-50 mb-0">No attendance irregularities found in master archive.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .fw-black { font-weight: 800; }
+    .tiny { font-size: 0.7rem; font-weight: 700; }
+    
+    .tracking-widest { letter-spacing: 0.15em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .tracking-tighter { letter-spacing: -0.01em; }
+
+    .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .report-row {
+        transition: all 0.3s ease;
+    }
+    
+    .report-row:hover {
+        background-color: #fbfcfe !important;
+        transform: scale(1.002);
+    }
+
+    .dropdown-item {
+        transition: all 0.2s ease;
+        border-radius: 10px !important;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f8fafc !important;
+        padding-left: 1.5rem;
+        color: #000 !important;
+    }
+</style>
 {% endblock %}

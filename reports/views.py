@@ -64,7 +64,8 @@ def logout_view(request):
         delta_ms = int(diff.total_seconds() * 1000)
         request.user.accumulated_ms += delta_ms
         request.user.current_session_start = None
-        request.user.last_timer_date = now.date() # Track the date
+        # Keep first_timer_start so it persists across login/logout session resumes
+        request.user.last_timer_date = now.date() 
         request.user.save()
     logout(request)
     return redirect('login')
@@ -84,10 +85,35 @@ def home(request):
 def employee_dashboard(request):
     reports = DailyReport.objects.filter(user=request.user).order_by('-date')
     form = DailyReportForm()
+    now = timezone.localtime()
     
+    # --- DATE RESET LOGIC (Midnight Flip) ---
+    # Trigger reset if today is a different day than the last recorded timer activity
+    if request.user.last_timer_date and request.user.last_timer_date != now.date():
+        request.user.accumulated_ms = 0
+        request.user.first_timer_start = None
+        if request.user.current_session_start:
+            request.user.current_session_start = now
+            request.user.first_timer_start = now
+        request.user.last_timer_date = now.date()
+        request.user.save()
+
+    # --- AUTO-START LOGIC ---
+    if request.user.role == 'employee' and not request.user.current_session_start:
+        reports_today = DailyReport.objects.filter(user=request.user, created_at__date=now.date()).count()
+        if reports_today < 3:
+            # Auto-start session
+            if request.user.accumulated_ms == 0:
+                request.user.first_timer_start = now
+            request.user.current_session_start = now
+            request.user.last_timer_date = now.date()
+            request.user.save()
+
     # Session tracking
     session_start = request.user.current_session_start
     session_start_iso = session_start.isoformat() if session_start else ""
+    first_start = request.user.first_timer_start
+    first_start_iso = first_start.isoformat() if first_start else ""
     accumulated_ms = request.user.accumulated_ms
 
     if request.method == 'POST':
@@ -111,7 +137,9 @@ def employee_dashboard(request):
         'reports': reports, 
         'form': form,
         'session_start_iso': session_start_iso,
+        'first_start_iso': first_start_iso,
         'accumulated_ms': accumulated_ms,
+        'server_now_iso': now.isoformat()
     })
 
 @login_required
@@ -119,14 +147,17 @@ def start_timer(request):
     if request.method == 'POST':
         now = timezone.localtime()
         
-        # Enforce 3 reports per day limit (submissions made today)
+        # Enforce 3 reports per day limit
         reports_today = DailyReport.objects.filter(user=request.user, created_at__date=now.date()).count()
         if reports_today >= 3:
             messages.error(request, "You have already submitted 3 reports today. Maximum allowed is 3 per day.")
             return redirect('employee_dashboard')
             
+        if request.user.accumulated_ms == 0:
+            request.user.first_timer_start = now
+            
         request.user.current_session_start = now
-        request.user.last_timer_date = now.date() # Track the date
+        request.user.last_timer_date = now.date()
         request.user.save()
         messages.success(request, "Work session started successfully.")
     return redirect('employee_dashboard')
@@ -138,26 +169,33 @@ def heartbeat(request):
         request.user.last_active = now
         request.user.is_online = True
         
+        # Handle Date Change: Reset timer if day has flipped
+        if request.user.last_timer_date and request.user.last_timer_date != now.date():
+            request.user.accumulated_ms = 0
+            request.user.first_timer_start = None
+            if request.user.current_session_start:
+                request.user.current_session_start = now
+                request.user.first_timer_start = now
+            request.user.last_timer_date = now.date()
+
         # If timer is running, calculate delta and add to accumulation
         if request.user.current_session_start:
-            # We don't want to count more than 2 minutes in one heartbeat (failsafe)
             diff = now - request.user.current_session_start
             delta_ms = int(diff.total_seconds() * 1000)
             
-            # Failsafe: if delta is too large (e.g. system wake from sleep), 
-            # we cap it to 120 seconds to ensure we don't overcount 
-            # but we ALWAYS reset start time to prevent time loss accumulation.
+            # Failsafe cap: 120s per heartbeat
             if delta_ms > 0:
-                request.user.accumulated_ms += min(delta_ms, 120000) # Cap at 120s
+                request.user.accumulated_ms += min(delta_ms, 120000)
             
-            request.user.current_session_start = now # Reset start to NOW for next window
+            request.user.current_session_start = now
         
         try:
             request.user.save()
             return JsonResponse({
                 'status': 'ok', 
                 'accumulated_ms': request.user.accumulated_ms,
-                'session_start_iso': request.user.current_session_start.isoformat() if request.user.current_session_start else ""
+                'session_start_iso': request.user.current_session_start.isoformat() if request.user.current_session_start else "",
+                'server_now': now.isoformat()
             })
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -188,6 +226,7 @@ def stop_timer(request):
         except:
             pass
         request.user.current_session_start = None
+        request.user.first_timer_start = None
         request.user.accumulated_ms = 0 # Reset after submission
         request.user.save()
         return JsonResponse({'status': 'success'})
@@ -202,6 +241,7 @@ def submit_report(request):
         # ONLY stop timer when report is actually submitted
         if request.user.current_session_start:
             request.user.current_session_start = None
+            request.user.first_timer_start = None
             request.user.accumulated_ms = 0
             request.user.save()
 
@@ -245,11 +285,11 @@ def team_leader_dashboard(request):
     if not team:
         return render(request, 'reports/team_leader_dashboard.html', {'error': 'You are not assigned to any team as leader.'})
     
-    # Fetch pending daily reports (timesheets)
+    # Fetch pending daily reports (timesheets) — Exclude self-reports for admin approval
     reports = DailyReport.objects.select_related('user').filter(
         user__team=team, 
         status='pending'
-    ).order_by('-created_at')
+    ).exclude(user=request.user).order_by('-created_at')
 
     # Fetch pending/reviewing leave requests
     leave_requests = LeaveRequest.objects.select_related('user').filter(
@@ -263,11 +303,17 @@ def team_leader_dashboard(request):
         status__in=['approved', 'rejected']
     ).order_by('-updated_at')[:20] # Last 20 processed
     
-    # Fetch pending/reviewing issue reports
+    # Fetch pending/reviewing issue reports for display
     issue_reports = IssueReport.objects.select_related('user').filter(
         leader_notified=request.user, 
         status__in=['pending', 'reviewing']
     ).order_by('-created_at')
+
+    # Metrics for the Boxes
+    member_count = team.members.filter(role='employee').count()
+    pending_leaves_count = leave_requests.count()
+    pending_count = reports.count()
+    issue_count = issue_reports.count()
 
     return render(request, 'reports/team_leader_dashboard.html', {
         'reports': reports,
@@ -275,7 +321,11 @@ def team_leader_dashboard(request):
         'processed_leaves': processed_leaves,
         'issue_reports': issue_reports,
         'team_name': team.name,
-        'team': team
+        'team': team,
+        'member_count': member_count,
+        'pending_leaves_count': pending_leaves_count,
+        'pending_count': pending_count,
+        'issue_count': issue_count
     })
 
 @login_required
@@ -288,6 +338,10 @@ def approve_report(request, report_id):
 
     # Team Leader logic — Accept direct employee reports
     if request.user.role == 'team_leader':
+        if report.user == request.user:
+            messages.error(request, "You cannot approve your own report. It must be approved by a Sub-Admin.")
+            return redirect(request.META.get('HTTP_REFERER', 'home'))
+            
         if report.user.team == request.user.led_team and report.user.role == 'employee':
             # Save to FinalReport (Permanent)
             FinalReport.objects.create(
@@ -550,19 +604,19 @@ def export_excel_combined(data_list, filename_prefix="all_reports"):
 
 @login_required
 def export_excel(request):
-    # Determine records to include (Both Pending and Finalized)
+    # Determine records to include: Strictly separate PENDING (active) and FINALIZED (archived)
     if request.user.role == 'team_leader':
-        # Team Leader gets their team's DailyReports (All) + FinalReports (Accepted)
-        daily_reports = DailyReport.objects.filter(user__team=request.user.led_team)
+        # Team Leader gets their team's PENDING DailyReports + All FINALIZED reports
+        daily_reports = DailyReport.objects.filter(user__team=request.user.led_team, status='pending')
         final_reports = FinalReport.objects.filter(team=request.user.led_team)
     elif request.user.role in ['admin', 'superadmin', 'manager']:
-        # Admin roles see all
-        daily_reports = DailyReport.objects.all()
+        # Admin roles see all PENDING + all FINALIZED
+        daily_reports = DailyReport.objects.filter(status='pending')
         final_reports = FinalReport.objects.all()
     else:
-        # Default fallback
+        # Default fallback (e.g. Employee only sees their own finalized if they can export)
         daily_reports = DailyReport.objects.none()
-        final_reports = FinalReport.objects.all()
+        final_reports = FinalReport.objects.filter(employee=request.user)
 
     # Apply Common Filtering to both querysets
     team_id = request.GET.get('team_id')
@@ -575,7 +629,6 @@ def export_excel(request):
         daily_reports = daily_reports.filter(user__team_id=team_id)
         final_reports = final_reports.filter(team_id=team_id)
     if leader_id:
-        # For daily reports, leader is linked via team's leader
         daily_reports = daily_reports.filter(user__team__leader_id=leader_id)
         final_reports = final_reports.filter(leader_id=leader_id)
     if user_id:
@@ -584,7 +637,8 @@ def export_excel(request):
     if month:
         try:
             year, m = month.split('-')
-            reports = reports.filter(date__year=year, date__month=m)
+            daily_reports = daily_reports.filter(date__year=year, date__month=m)
+            final_reports = final_reports.filter(date__year=year, date__month=m)
         except ValueError:
             pass
         
@@ -593,11 +647,13 @@ def export_excel(request):
         daily_reports = daily_reports.filter(date=today)
         final_reports = final_reports.filter(date=today)
     elif duration == '7_days':
-        d = timezone.localtime().date() - timedelta(days=7)
+        # Exactly last 7 cycles including today
+        d = timezone.localtime().date() - timedelta(days=6)
         daily_reports = daily_reports.filter(date__gte=d)
         final_reports = final_reports.filter(date__gte=d)
     elif duration == '30_days':
-        d = timezone.localtime().date() - timedelta(days=30)
+        # Exactly last 30 cycles including today
+        d = timezone.localtime().date() - timedelta(days=29)
         daily_reports = daily_reports.filter(date__gte=d)
         final_reports = final_reports.filter(date__gte=d)
         
@@ -638,14 +694,14 @@ def export_excel(request):
 @login_required
 def export_pdf(request):
     if request.user.role == 'team_leader':
-        daily_reports = DailyReport.objects.filter(user__team=request.user.led_team)
+        daily_reports = DailyReport.objects.filter(user__team=request.user.led_team, status='pending')
         final_reports = FinalReport.objects.filter(team=request.user.led_team)
     elif request.user.role in ['admin', 'superadmin', 'manager']:
-        daily_reports = DailyReport.objects.all()
+        daily_reports = DailyReport.objects.filter(status='pending')
         final_reports = FinalReport.objects.all()
     else:
         daily_reports = DailyReport.objects.none()
-        final_reports = FinalReport.objects.all()
+        final_reports = FinalReport.objects.filter(employee=request.user)
     
     # Common Filtering
     team_id = request.GET.get('team_id')
@@ -666,7 +722,8 @@ def export_pdf(request):
     if month:
         try:
             year, m = month.split('-')
-            reports = reports.filter(date__year=year, date__month=m)
+            daily_reports = daily_reports.filter(date__year=year, date__month=m)
+            final_reports = final_reports.filter(date__year=year, date__month=m)
         except ValueError:
             pass
 
@@ -675,11 +732,11 @@ def export_pdf(request):
         daily_reports = daily_reports.filter(date=today)
         final_reports = final_reports.filter(date=today)
     elif duration == '7_days':
-        d = timezone.localtime().date() - timedelta(days=7)
+        d = timezone.localtime().date() - timedelta(days=6)
         daily_reports = daily_reports.filter(date__gte=d)
         final_reports = final_reports.filter(date__gte=d)
     elif duration == '30_days':
-        d = timezone.localtime().date() - timedelta(days=30)
+        d = timezone.localtime().date() - timedelta(days=29)
         daily_reports = daily_reports.filter(date__gte=d)
         final_reports = final_reports.filter(date__gte=d)
         
@@ -707,7 +764,7 @@ def export_pdf(request):
         })
 
     template_path = 'reports/pdf_report.html'
-    context = {'reports': combined_list, 'date': datetime.now()}
+    context = {'reports': combined_list, 'date': datetime.now(), 'request': request}
     
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="final_reports_{datetime.now().strftime("%Y%m%d")}.pdf"'

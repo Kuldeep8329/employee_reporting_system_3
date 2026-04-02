@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row align-items-center mb-5">
     <div class="col-md-7">
-        <h2 class="fw-bold text-primary mb-1">devNector Global Dashboard (SuperAdmin)</h2>
+        <h2 class="fw-bold text-primary mb-1">devNectar Global Dashboard (SuperAdmin)</h2>
         <p class="text-muted small">Full system access for User Management and Organizations.</p>
     </div>
     <div class="col-md-5 text-md-end mt-3 mt-md-0">
@@ -38,15 +38,9 @@
                             {% for u in users %}
                             <tr>
                                 <td class="d-flex align-items-center gap-3">
-                                    {% if u.profile_photo %}
-                                    <div class="rounded-circle overflow-hidden border border-light shadow-sm bg-light d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; flex-shrink: 0;">
-                                        <img src="{{ u.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px; flex-shrink: 0;">
+                                        <i class="fas fa-user" style="font-size: 0.9rem;"></i>
                                     </div>
-                                    {% else %}
-                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-size: 0.85rem; font-weight: bold; flex-shrink: 0;">
-                                        {{ u.username|first|upper }}
-                                    </div>
-                                    {% endif %}
                                     <div>
                                         <div class="fw-bold text-dark mb-0">{{ u.get_full_name|default:u.username }}</div>
                                         <div class="text-muted small">@{{ u.username }}</div>
