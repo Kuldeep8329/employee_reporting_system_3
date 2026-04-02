@@ -238,12 +238,11 @@ def submit_report(request):
     duration_str = request.GET.get('timer', '00:00:00')
     
     if request.method == 'POST':
-        # ONLY stop timer when report is actually submitted
-        if request.user.current_session_start:
-            request.user.current_session_start = None
-            request.user.first_timer_start = None
-            request.user.accumulated_ms = 0
-            request.user.save()
+        # ALWAYS stop and reset timer when report is actually submitted
+        request.user.current_session_start = None
+        request.user.first_timer_start = None
+        request.user.accumulated_ms = 0
+        request.user.save()
 
         now = timezone.localtime()
         # Enforce 3 reports per day limit

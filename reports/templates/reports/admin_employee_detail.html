@@ -19,14 +19,8 @@
         </nav>
         <div class="d-flex align-items-center gap-4">
             <div class="position-relative">
-                <div class="rounded-circle border border-4 border-white shadow-sm overflow-hidden" style="width: 100px; height: 100px; background: #f8fafc;">
-                    {% if employee.profile_photo %}
-                        <img src="{{ employee.profile_photo.url }}" class="w-100 h-100 object-fit-cover shadow-sm">
-                    {% else %}
-                        <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary">
-                            <i class="fas fa-{% if employee.role == 'team_leader' %}crown{% else %}user-astronaut{% endif %} fa-2x"></i>
-                        </div>
-                    {% endif %}
+                <div class="rounded-circle border border-4 border-white shadow-sm overflow-hidden d-flex align-items-center justify-content-center bg-dark text-white" style="width: 100px; height: 100px;">
+                    <i class="fas fa-{% if employee.role == 'team_leader' %}crown{% else %}user-astronaut{% endif %} fa-2x"></i>
                 </div>
             </div>
             <div>
