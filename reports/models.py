@@ -15,6 +15,7 @@ class User(AbstractUser):
     team = models.ForeignKey('Team', on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
     current_session_start = models.DateTimeField(null=True, blank=True)
+    first_timer_start = models.DateTimeField(null=True, blank=True)
     accumulated_ms = models.BigIntegerField(default=0)
     last_timer_date = models.DateField(null=True, blank=True)
     last_active = models.DateTimeField(null=True, blank=True)

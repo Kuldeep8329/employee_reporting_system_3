@@ -5,7 +5,7 @@
 {% block content %}
 <div class="row align-items-center mb-5">
     <div class="col-md-7">
-        <h2 class="fw-bold text-primary mb-1">devNector Manager Dashboard</h2>
+        <h2 class="fw-bold text-primary mb-1">devNectar Manager Dashboard</h2>
         <p class="text-muted small">Comprehensive monitoring across all teams and approval levels.</p>
     </div>
     <div class="col-md-5 text-md-end mt-3 mt-md-0">
@@ -101,11 +101,9 @@
                          <tr>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    {% if report.user.profile_photo %}
-                                    <div class="rounded-circle overflow-hidden shadow-sm" style="width: 32px; height: 32px;">
-                                        <img src="{{ report.user.profile_photo.url }}" alt="P" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;">
+                                        <i class="fas fa-user" style="font-size: 0.9rem;"></i>
                                     </div>
-                                    {% endif %}
                                     <div>
                                         <span class="fw-bold d-block">{{ report.user.get_full_name|default:report.user.username }}</span>
                                         <small class="text-muted">{{ report.user.team.name|default:"No Team" }}</small>

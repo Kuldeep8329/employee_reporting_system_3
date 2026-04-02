@@ -1,13 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>devNector - {% block title %}{% endblock %}</title>
+    <title>devNectar - {% block title %}{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6.4.2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -65,10 +68,11 @@
     </style>
 </head>
 <body>
+    {% if request.resolver_match.url_name != 'login' %}
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold text-primary" href="{% url 'home' %}">
-                devNector <span class="text-dark">Reporting</span>
+            <a class="navbar-brand py-0 d-flex align-items-center" href="{% url 'home' %}" style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">
+                <span style="color: #000000;">dev</span><span style="color: #00d8ff;">Nectar</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -77,81 +81,110 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
 
+                        <!-- Direct Action Panel Button -->
                         <li class="nav-item me-3">
                             {% if user.role == 'team_leader' %}
-                                {% if request.resolver_match.url_name == 'team_leader_dashboard' %}
-                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
-                                {% else %}
-                                    <a href="{% url 'team_leader_dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Leader Panel</a>
-                                {% endif %}
+                                <a href="{% if request.resolver_match.url_name == 'team_leader_dashboard' %}{% url 'employee_dashboard' %}{% else %}{% url 'team_leader_dashboard' %}{% endif %}" 
+                                   class="btn btn-sm {% if request.resolver_match.url_name == 'team_leader_dashboard' %}btn-outline-success{% else %}btn-primary{% endif %} rounded-pill px-4 fw-black shadow-sm" style="font-size: 0.8rem; letter-spacing: 0.02em;">
+                                   {% if request.resolver_match.url_name == 'team_leader_dashboard' %}GO TO WORK{% else %}<i class="fas fa-id-badge me-2"></i>LEADER PANEL{% endif %}
+                                </a>
                             {% elif user.role == 'admin' %}
-                                {% if request.resolver_match.url_name == 'admin_dashboard' %}
-                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
-                                {% else %}
-                                    <a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Sub-Admin Panel</a>
-                                {% endif %}
+                                <a href="{% if request.resolver_match.url_name == 'admin_dashboard' %}{% url 'employee_dashboard' %}{% else %}{% url 'admin_dashboard' %}{% endif %}" 
+                                   class="btn btn-sm {% if request.resolver_match.url_name == 'admin_dashboard' %}btn-outline-success{% else %}btn-primary{% endif %} rounded-pill px-4 fw-black shadow-sm" style="font-size: 0.8rem; letter-spacing: 0.02em; background-color: #00d8ff; border-color: #00d8ff; color: #000;">
+                                   {% if request.resolver_match.url_name == 'admin_dashboard' %}GO TO WORK{% else %}<i class="fas fa-shield-halved me-2"></i>SUB-ADMIN PANEL{% endif %}
+                                </a>
                             {% elif user.role == 'manager' %}
-                                {% if request.resolver_match.url_name == 'manager_dashboard' %}
-                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
-                                {% else %}
-                                    <a href="{% url 'manager_dashboard' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">Manager Panel</a>
-                                {% endif %}
+                                <a href="{% if request.resolver_match.url_name == 'manager_dashboard' %}{% url 'employee_dashboard' %}{% else %}{% url 'manager_dashboard' %}{% endif %}" 
+                                   class="btn btn-sm {% if request.resolver_match.url_name == 'manager_dashboard' %}btn-outline-success{% else %}btn-primary{% endif %} rounded-pill px-4 fw-black shadow-sm" style="font-size: 0.8rem; letter-spacing: 0.02em;">
+                                   {% if request.resolver_match.url_name == 'manager_dashboard' %}GO TO WORK{% else %}<i class="fas fa-sitemap me-2"></i>MANAGER PANEL{% endif %}
+                                </a>
                             {% elif user.role == 'superadmin' %}
-                                {% if request.resolver_match.url_name == 'superadmin_dashboard' %}
-                                    <a href="{% url 'employee_dashboard' %}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Go to Work</a>
-                                {% else %}
-                                    <a href="{% url 'superadmin_dashboard' %}" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-bold">Super Panel</a>
-                                {% endif %}
+                                <a href="{% if request.resolver_match.url_name == 'superadmin_dashboard' %}{% url 'employee_dashboard' %}{% else %}{% url 'superadmin_dashboard' %}{% endif %}" 
+                                   class="btn btn-sm {% if request.resolver_match.url_name == 'superadmin_dashboard' %}btn-outline-success{% else %}btn-dark{% endif %} rounded-pill px-4 fw-black shadow-sm" style="font-size: 0.8rem; letter-spacing: 0.02em;">
+                                   {% if request.resolver_match.url_name == 'superadmin_dashboard' %}GO TO WORK{% else %}<i class="fas fa-user-lock me-2"></i>SUPER PANEL{% endif %}
+                                </a>
                             {% endif %}
                         </li>
-                        <li class="nav-item d-flex align-items-center me-3">
-                            {% if user.profile_photo %}
-                            <div class="rounded-circle overflow-hidden border border-2 border-primary shadow-sm me-2 bg-light d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; flex-shrink: 0;">
-                                <img src="{{ user.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; display: block;">
-                            </div>
-                            {% else %}
-                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 44px; height: 44px; font-weight: bold; flex-shrink: 0;">
-                                {{ user.username|first|upper }}
-                            </div>
-                            {% endif %}
-                            <span class="nav-link text-muted p-0">Welcome, <strong>{{ user.get_full_name|default:user.username }}</strong></span>
-                        </li>
+
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark fw-semibold d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-bars me-2"></i> Menu
+                            <a class="nav-link p-0 d-flex align-items-center justify-content-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 40px; height: 40px;">
+                                <i class="fas fa-bars fs-4 text-dark"></i>
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" aria-labelledby="userMenu" style="border-radius: 12px; min-width: 200px;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-3 px-2" aria-labelledby="userMenu" style="border-radius: 15px; min-width: 240px;">
+                                <li class="px-3 pb-3 mb-2 border-bottom">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle overflow-hidden border border-2 border-light" style="width: 45px; height: 45px; flex-shrink: 0;">
+                                            {% if user.profile_photo %}
+                                                <img src="{{ user.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-dark text-white w-100 h-100 d-flex align-items-center justify-content-center fw-black" style="font-size: 0.8rem;">
+                                                    {{ user.username|slice:":1"|upper }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-truncate">
+                                            <div class="fw-black text-dark" style="font-size: 0.95rem; letter-spacing: -0.02em;">{{ user.get_full_name|default:user.username }}</div>
+                                            <div class="text-muted tiny mt-1 fw-bold opacity-75 tracking-wider text-uppercase">{{ user.get_role_display }}</div>
+                                        </div>
+                                    </div>
+                                </li>
                                 <li>
-                                    <a class="dropdown-item py-2 d-flex align-items-center" href="#">
-                                        <i class="fas fa-user-circle me-3 text-primary"></i> Profile
+                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center fw-bold" href="#" id="view-profile-btn" 
+                                       data-name="{{ user.get_full_name|default:user.username }}"
+                                       data-photo="{% if user.profile_photo %}{{ user.profile_photo.url }}{% endif %}"
+                                       data-role="{{ user.get_role_display }}"
+                                       data-team="{{ user.team.name|default:'General Core' }}">
+                                        <i class="fas fa-user-circle me-3 text-dark opacity-50"></i> My Profile
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'leave_request' %}">
-                                        <i class="fas fa-calendar-plus me-3 text-success"></i> Leave Request
+                                    <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center fw-bold" href="{% url 'leave_request' %}">
+                                        <i class="fas fa-calendar-check me-3 text-dark opacity-50"></i> Leave Request
                                     </a>
-                                                               <li>
+                                </li>
+                                <li>
                                      {% if user.role == 'admin' or user.role == 'superadmin' or user.role == 'manager' %}
-                                         <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'admin_issue_list' %}">
-                                             <i class="fas fa-bug me-3 text-warning"></i> Issue Tracker
+                                         <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center fw-bold" href="{% url 'admin_issue_list' %}">
+                                             <i class="fas fa-headset me-3 text-dark opacity-50"></i> Issue Tracker
                                          </a>
                                      {% else %}
-                                         <a class="dropdown-item py-2 d-flex align-items-center" href="{% url 'issue_tracker' %}">
-                                             <i class="fas fa-bug me-3 text-warning"></i> Issue Tracker
+                                         <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center fw-bold" href="{% url 'issue_tracker' %}">
+                                             <i class="fas fa-headset me-3 text-dark opacity-50"></i> Issue Tracker
                                          </a>
                                      {% endif %}
-                                 </li>
-                                 <li><hr class="dropdown-divider"></li>
-                                 <li>
+                                </li>
+                                <li><hr class="dropdown-divider opacity-10"></li>
+                                <li>
+                                     <a class="dropdown-item py-2 px-3 rounded-3 d-flex align-items-center fw-black text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                         <i class="fas fa-door-open me-3"></i> LOGOUT
+                                     </a>
                                      <form id="logout-form" action="{% url 'logout' %}" method="post" class="d-none">
                                          {% csrf_token %}
                                      </form>
-                                     <a class="dropdown-item py-2 d-flex align-items-center text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                         <i class="fas fa-sign-out-alt me-3"></i> Logout
-                                     </a>
                                  </li>
                             </ul>
                         </li>
+
+                        <style>
+                            .dropdown-item {
+                                transition: all 0.2s ease;
+                                color: #1e293b !important;
+                                font-size: 0.9rem;
+                            }
+                            .dropdown-item:hover {
+                                background-color: #f1f5f9 !important;
+                                color: #000 !important;
+                                transform: translateX(4px);
+                            }
+                            .dropdown-item:active, .dropdown-item.active {
+                                background-color: #f1f5f9 !important;
+                                color: #000 !important;
+                            }
+                            .dropdown-item i {
+                                width: 20px;
+                                text-align: center;
+                            }
+                        </style>
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">Login</a>
@@ -161,6 +194,7 @@
             </div>
         </div>
     </nav>
+    {% endif %}
 
     <main class="dashboard-container">
         <!-- Dashboard Content -->
@@ -231,7 +265,7 @@
                 .then(data => {
                     // If dashboard timer exists, update its base accumulation from server
                     if (data.status === 'ok' && typeof window.updateAccumulatedTime === 'function') {
-                        window.updateAccumulatedTime(data.accumulated_ms, data.session_start_iso);
+                        window.updateAccumulatedTime(data.accumulated_ms, data.session_start_iso, data.server_now);
                     }
                 })
                 .catch(() => {});
@@ -278,6 +312,43 @@
         };
     </script>
     {% endif %}
+
+    <script>
+        // --- Profile Modal Logic ---
+        document.getElementById('view-profile-btn')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            const data = this.dataset;
+            
+            Swal.fire({
+                html: `
+                    <div class="text-center">
+                        <div class="rounded-circle overflow-hidden border border-4 border-primary shadow-lg mx-auto mb-3" style="width: 140px; height: 140px;">
+                            ${data.photo ? 
+                                `<img src="${data.photo}" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 5%;">` : 
+                                `<div class="bg-primary text-white d-flex align-items-center justify-content-center h-100"><i class="fas fa-user-circle fa-4x"></i></div>`
+                            }
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1">${data.name}</h3>
+                        <p class="text-muted mb-0"><i class="fas fa-users-cog me-1"></i> ${data.team}</p>
+                        <hr class="my-3 opacity-25">
+                        <div class="d-flex justify-content-center gap-2 mb-2">
+                             <span class="badge bg-primary rounded-pill px-3 py-2">${data.role}</span>
+                             <span class="badge bg-success rounded-pill px-3 py-2">Account Active</span>
+                        </div>
+                    </div>
+                `,
+                showConfirmButton: true,
+                confirmButtonText: 'Great!',
+                confirmButtonColor: '#3b82f6',
+                width: '400px',
+                padding: '1.5rem',
+                customClass: {
+                    container: 'profile-modal-container',
+                    popup: 'rounded-4 border-0 shadow-lg'
+                }
+            });
+        });
+    </script>
     {% endif %}
 </body>
 </html>

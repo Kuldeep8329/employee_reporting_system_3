@@ -18,9 +18,9 @@ class DailyReportForm(forms.ModelForm):
         model = DailyReport
         fields = ['date', 'work_description', 'hours_worked', 'work_duration_calc']
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'readonly': 'readonly'}),
             'work_description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'hours_worked': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'hours_worked': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'readonly': 'readonly'}),
             'work_duration_calc': forms.HiddenInput(),
         }
 

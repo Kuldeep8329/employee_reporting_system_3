@@ -3,242 +3,334 @@
 {% block title %}Sub-Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="row align-items-center mb-5">
+<!-- Premium Admin Header -->
+<div class="row align-items-center mb-5 animate-slide-up" style="position: relative; z-index: 1000;">
     <div class="col-md-7">
-        <h2 class="fw-bold text-primary mb-1">devNector Sub-Admin Dashboard</h2>
-        <p class="text-muted small">Monitor all reports across all teams.</p>
+        <h1 class="fw-black mb-1 text-dark" style="font-size: 2.2rem; letter-spacing: -0.04em;">ADMIN PERFORMANCE HUB</h1>
     </div>
-    <div class="col-md-5 text-md-end mt-3 mt-md-0">
-        <div class="d-flex flex-wrap justify-content-md-end gap-3">
-            <!-- Global PDF Group -->
-            <div class="dropdown">
-                <button class="btn btn-outline-danger btn-lg px-4 py-2 fw-bold shadow-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-pdf me-2"></i> GLOBAL PDF
+    <div class="col-md-5 text-md-end mt-4 mt-md-0">
+        <div class="d-inline-flex gap-3">
+            <div class="dropdown" style="z-index: 3000 !important;">
+                <button class="btn btn-dark rounded-pill px-4 fw-black shadow-sm dropdown-toggle border-0 d-flex align-items-center" type="button" data-bs-toggle="dropdown" style="background: #000000; height: 48px;">
+                    <i class="fas fa-file-export me-2 opacity-50"></i> REPORTS
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2">
-                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=today"><i class="fas fa-calendar-day text-danger me-2"></i> Today's Report</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=7_days"><i class="fas fa-calendar-week text-danger me-2"></i> Last 7 Days</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_pdf' %}?duration=30_days"><i class="fas fa-calendar-alt text-danger me-2"></i> Last 30 Days</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item py-2 fw-bold bg-danger bg-opacity-10" href="{% url 'export_pdf' %}"><i class="fas fa-infinity text-danger me-2"></i> ALL TIME DATABASE</a></li>
-                </ul>
-            </div>
-            
-            <!-- Global Excel Group -->
-            <div class="dropdown">
-                <button class="btn btn-outline-success btn-lg px-4 py-2 fw-bold shadow-sm dropdown-toggle d-flex align-items-center" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-excel me-2"></i> GLOBAL EXCEL
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-2">
-                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=today"><i class="fas fa-calendar-day text-success me-2"></i> Today's Report</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=7_days"><i class="fas fa-calendar-week text-success me-2"></i> Last 7 Days</a></li>
-                    <li><a class="dropdown-item py-2" href="{% url 'export_excel' %}?duration=30_days"><i class="fas fa-calendar-alt text-success me-2"></i> Last 30 Days</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item py-2 fw-bold bg-success bg-opacity-10" href="{% url 'export_excel' %}"><i class="fas fa-infinity text-success me-2"></i> ALL TIME DATABASE</a></li>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-3" style="border-radius: 20px; min-width: 280px; z-index: 3001 !important;">
+                    <li class="dropdown-header text-uppercase small fw-black opacity-50 pb-2 border-bottom mb-2">Select Duration</li>
+                    
+                    <!-- Today Section -->
+                    <li class="dropdown-header tiny fw-bold text-dark pt-2">PRESENT CYCLE (TODAY)</li>
+                    <li><a class="dropdown-item py-2 px-3 rounded-3 d-flex justify-content-between align-items-center" href="{% url 'export_pdf' %}?duration=today">
+                        <span><i class="fas fa-file-pdf text-danger me-2 opacity-75"></i> PDF Audit</span>
+                        <i class="fas fa-arrow-down small opacity-25"></i>
+                    </a></li>
+                    <li><a class="dropdown-item py-2 px-3 rounded-3 d-flex justify-content-between align-items-center" href="{% url 'export_excel' %}?duration=today">
+                        <span><i class="fas fa-file-excel text-success me-2 opacity-75"></i> Excel Sheet</span>
+                        <i class="fas fa-arrow-down small opacity-25"></i>
+                    </a></li>
+
+                    <li><hr class="dropdown-divider opacity-10"></li>
+
+                    <!-- Last 7 Days Section -->
+                    <li class="dropdown-header tiny fw-bold text-dark">WEEKLY SUMMARY (7 DAYS)</li>
+                    <li><a class="dropdown-item py-2 px-3 rounded-3 d-flex justify-content-between align-items-center" href="{% url 'export_pdf' %}?duration=7_days">
+                        <span><i class="fas fa-file-pdf text-danger me-2 opacity-75"></i> PDF Audit</span>
+                        <i class="fas fa-arrow-down small opacity-25"></i>
+                    </a></li>
+                    <li><a class="dropdown-item py-2 px-3 rounded-3 d-flex justify-content-between align-items-center" href="{% url 'export_excel' %}?duration=7_days">
+                        <span><i class="fas fa-file-excel text-success me-2 opacity-75"></i> Excel Sheet</span>
+                        <i class="fas fa-arrow-down small opacity-25"></i>
+                    </a></li>
+
+                    <li><hr class="dropdown-divider opacity-10"></li>
+
+                    <!-- Last 30 Days Section -->
+                    <li class="dropdown-header tiny fw-bold text-dark">MONTHLY ARCHIVE (30 DAYS)</li>
+                    <li><a class="dropdown-item py-2 px-3 rounded-3 d-flex justify-content-between align-items-center" href="{% url 'export_pdf' %}?duration=30_days">
+                        <span><i class="fas fa-file-pdf text-danger me-2 opacity-75"></i> PDF Audit</span>
+                        <i class="fas fa-arrow-down small opacity-25"></i>
+                    </a></li>
+                    <li><a class="dropdown-item py-2 px-3 rounded-3 d-flex justify-content-between align-items-center" href="{% url 'export_excel' %}?duration=30_days">
+                        <span><i class="fas fa-file-excel text-success me-2 opacity-75"></i> Excel Sheet</span>
+                        <i class="fas fa-arrow-down small opacity-25"></i>
+                    </a></li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
 
-<h4 class="fw-bold mb-3 text-dark">Teams & Groups</h4>
-<div class="row mb-5">
+<!-- Global Summary Metrics -->
+<div class="row mb-5 animate-slide-up" style="animation-delay: 0.1s;">
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm p-4 h-100 position-relative overflow-hidden stat-card" style="border-radius: 24px; background: linear-gradient(135deg, #000 0%, #1e293b 100%); color: #fff; transition: all 0.3s ease;">
+            <div class="z-1 position-relative">
+                <p class="small text-white-50 fw-bold mb-1 tracking-wider">TOTAL VALIDATED LOGS</p>
+                <h1 class="fw-black mb-0 display-4" style="letter-spacing: -0.04em;">{{ summary.count|default:0 }}</h1>
+                <div class="mt-3">
+                    <span class="badge bg-white bg-opacity-10 text-white rounded-pill px-3 py-2 fw-bold" style="font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1);">SYSTEM WIDE TOTAL</span>
+                </div>
+            </div>
+            <div class="position-absolute end-0 bottom-0 p-3 opacity-10">
+                <i class="fas fa-chart-line fa-6x"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm p-4 h-100 stat-card" style="border-radius: 24px; background: #ffffff; transition: all 0.3s ease; border-left: 6px solid #00d8ff !important;">
+            <p class="small text-muted fw-bold mb-1 tracking-wider opacity-75">TOTAL PRODUCTIVE HOURS</p>
+            <h1 class="fw-black mb-1 display-4 text-dark" style="letter-spacing: -0.04em;">{{ summary.total_hours|default:0 }}<span style="font-size: 1.5rem; color: #00d8ff; margin-left: 5px;">H</span></h1>
+            <div class="mt-3">
+                <span class="badge bg-light text-dark border rounded-pill px-3 py-2 fw-bold" style="font-size: 0.7rem;">ACROSS {{ teams.count }} ACTIVE TEAMS</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm p-4 h-100 stat-card" style="border-radius: 24px; background: #ffffff; transition: all 0.3s ease; border-left: 6px solid #000 !important;">
+            <p class="small text-muted fw-bold mb-1 tracking-wider opacity-75">SYSTEM LOAD</p>
+            <h1 class="fw-black mb-1 display-4 text-dark" style="letter-spacing: -0.04em;">{% firstof pending_reports.count '0' %}</h1>
+            <div class="mt-4 progress" style="height: 10px; border-radius: 20px; background: #f1f5f9;">
+                <div class="progress-bar" role="progressbar" style="width: 45%; background: #000; border-radius: 20px;"></div>
+            </div>
+            <p class="text-muted tiny mt-2 mb-0 fw-bold">PENDING LEADER VALIDATIONS</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px -10px rgba(0,0,0,0.12) !important;
+    }
+</style>
+
+<!-- Active Teams Grid -->
+<div class="d-flex align-items-center justify-content-between mb-4 animate-slide-up" style="animation-delay: 0.2s;">
+    <h4 class="fw-black text-dark mb-0"><i class="fas fa-layer-group me-2 opacity-25"></i> Ecosystem Structure</h4>
+    <span class="text-muted small fw-bold text-uppercase tracking-tighter">Click to inspect team details</span>
+</div>
+<div class="row mb-5 animate-slide-up" style="animation-delay: 0.2s;">
     {% for team in teams %}
     <div class="col-md-4 mb-4">
         <a href="{% url 'admin_team_detail' team.id %}" class="text-decoration-none">
-            <div class="card h-100 p-4 shadow-sm border-0 bg-white" style="border-radius: 16px; transition: transform 0.2s;">
+            <div class="card h-100 p-4 shadow-sm border-0 bg-white hover-card" style="border-radius: 24px;">
                 <div class="d-flex align-items-center">
-                    <div class="rounded-circle overflow-hidden border border-2 border-light shadow-sm d-flex align-items-center justify-content-center bg-white" style="width: 56px; height: 56px; flex-shrink: 0;">
+                    <div class="profile-frame-lg">
                         {% if team.logo %}
-                            <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" class="rounded-circle" style="width: 64px; height: 64px; object-fit: cover;">
                         {% else %}
-                            <i class="fas fa-users text-primary"></i>
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 64px; height: 64px;">
+                                <i class="fas fa-users fa-lg"></i>
+                            </div>
                         {% endif %}
                     </div>
-                    <div class="ms-3">
-                        <h5 class="fw-bold text-dark mb-0">{{ team.name }}</h5>
-                        <p class="text-muted small mb-0">View {{ team.user_set.count }} Employees</p>
+                    <div class="ms-4">
+                        <h5 class="fw-black text-dark mb-1">{{ team.name }}</h5>
+                        <p class="text-muted small mb-0 fw-bold">{{ team.user_set.count }} <span class="opacity-50">MEMBERS ASSIGNED</span></p>
                     </div>
                 </div>
             </div>
         </a>
     </div>
     {% empty %}
-    <div class="col-12 text-center text-muted">No teams available.</div>
+    <div class="col-12 text-center py-5 bg-light rounded-5 text-muted fw-bold italic border-dashed">NO ACTIVE TEAMS DETECTED IN CORE DATABASE</div>
     {% endfor %}
 </div>
 
-<hr class="mb-5 text-muted">
-
-<h4 class="fw-bold mb-3 text-dark">Live Leadership Presence</h4>
-<div class="row mb-5">
-    {% for team in teams %}
-        {% if team.leader %}
-        <div class="col-md-3 mb-3">
-            <a href="{% url 'admin_employee_detail' team.leader.id %}" class="text-decoration-none">
-                <div class="card p-3 shadow-sm border-0 bg-white" style="border-radius: 12px; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-                    <div class="d-flex align-items-center">
-                        <div class="position-relative">
-                            {% if team.leader.profile_photo %}
-                            <div class="rounded-circle overflow-hidden border border-1 border-primary shadow-sm" style="width: 45px; height: 45px;">
-                                <img src="{{ team.leader.profile_photo.url }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%;">
-                            </div>
-                            {% else %}
-                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                <i class="fas fa-crown mb-0"></i>
-                            </div>
-                            {% endif %}
-                            <span class="position-absolute bottom-0 end-0 p-1 border border-2 border-white rounded-circle {% if team.leader.is_currently_online %}bg-success{% else %}bg-danger{% endif %}" title="{% if team.leader.is_currently_online %}Online{% else %}Offline{% endif %}" style="width: 13px; height: 13px;"></span>
-                        </div>
-                        <div class="ms-3">
-                            <h6 class="fw-bold text-dark mb-0">{{ team.leader.get_full_name|default:team.leader.username }}</h6>
-                            <p class="text-muted small mb-0">{{ team.name }}</p>
-                        </div>
-                    </div>
-                </div>
-            </a>
+<!-- Global Intelligence & Filters -->
+<div class="card border-0 shadow-sm p-4 mb-5 animate-slide-up" style="border-radius: 24px; animation-delay: 0.3s; background: #ffffff;">
+    <form method="get" class="row align-items-end g-3">
+        <div class="col-md-3">
+            <label class="form-label text-muted tiny fw-black text-uppercase ms-1 mb-2">TARGET ENTITY</label>
+            <select name="team_id" class="form-select border-0 bg-light rounded-3 py-2 fw-bold shadow-none" style="height: 48px;">
+                <option value="">All Functional Units</option>
+                {% for team in teams %}
+                <option value="{{ team.id }}" {% if request.GET.team_id == team.id|stringformat:"i" %}selected{% endif %}>{{ team.name }}</option>
+                {% endfor %}
+            </select>
         </div>
-        {% endif %}
-    {% endfor %}
+        <div class="col-md-3">
+            <label class="form-label text-muted tiny fw-black text-uppercase ms-1 mb-2">LEADERSHIP FILTER</label>
+            <select name="leader_id" class="form-select border-0 bg-light rounded-3 py-2 fw-bold shadow-none" style="height: 48px;">
+                <option value="">All Team Leaders</option>
+                {% for leader in leaders %}
+                <option value="{{ leader.id }}" {% if request.GET.leader_id == leader.id|stringformat:"i" %}selected{% endif %}>{{ leader.get_full_name|default:leader.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label text-muted tiny fw-black text-uppercase ms-1 mb-2">TEMPORAL SCAN</label>
+            <input type="month" name="month" class="form-control border-0 bg-light rounded-3 py-2 fw-bold shadow-none" style="height: 48px;" value="{{ request.GET.month }}">
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-dark flex-fill rounded-3 fw-black border-0 shadow-sm" style="height: 48px; background: #000;">APPLY FILTER</button>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-light rounded-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;"><i class="fas fa-rotate-left"></i></a>
+        </div>
+    </form>
 </div>
 
-<h4 class="fw-bold mb-3 text-dark">Recent Activity Feed</h4>
-
-<div class="row mb-5">
-    <!-- Filter for Final Reports -->
-    <div class="col-md-12 mb-4">
-        <div class="card p-3 shadow-sm border-0" style="border-radius: 12px; border: 1px solid #e2e8f0;">
-           <form method="get" class="row align-items-end g-3">
-               <div class="col-md-3">
-                   <label class="form-label text-muted small fw-bold">Filter by Team</label>
-                   <select name="team_id" class="form-select border-0 bg-light py-2">
-                       <option value="">All Teams</option>
-                       {% for team in teams %}
-                       <option value="{{ team.id }}" {% if request.GET.team_id == team.id|stringformat:"i" %}selected{% endif %}>{{ team.name }}</option>
-                       {% endfor %}
-                   </select>
-               </div>
-               <div class="col-md-3">
-                   <label class="form-label text-muted small fw-bold">Filter by Leader</label>
-                   <select name="leader_id" class="form-select border-0 bg-light py-2">
-                       <option value="">All Leaders</option>
-                       {% for leader in leaders %}
-                       <option value="{{ leader.id }}" {% if request.GET.leader_id == leader.id|stringformat:"i" %}selected{% endif %}>{{ leader.get_full_name|default:leader.username }}</option>
-                       {% endfor %}
-                   </select>
-               </div>
-               <div class="col-md-3">
-                   <label class="form-label text-muted small fw-bold">Filter by Month</label>
-                   <input type="month" name="month" class="form-control border-0 bg-light py-2" value="{{ request.GET.month }}">
-               </div>
-               <div class="col-md-3 d-flex gap-2">
-                   <button type="submit" class="btn btn-primary flex-fill py-2 fw-bold">
-                       Apply
-                   </button>
-                   <a href="{% url 'admin_dashboard' %}" class="btn btn-light flex-fill py-2 fw-bold">Clear</a>
-               </div>
-           </form>
+<!-- Pending Critical Reports -->
+<div class="card border-0 shadow-sm mb-5 animate-slide-up" style="border-radius: 28px; animation-delay: 0.4s; overflow: hidden; background: #ffffff;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="fw-black text-dark mb-0"><i class="fas fa-clock-rotate-left me-2 text-warning opacity-50"></i> Awaiting Admin Action</h4>
+            <p class="text-muted tiny mt-1 mb-0 tracking-widest text-uppercase">Direct Leadership Performance Validation</p>
         </div>
+        <div class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-4 py-2 border border-warning border-opacity-10 fw-black shadow-sm" style="font-size: 0.75rem;">PENDING LEADER LOGS</div>
     </div>
-    
-    <!-- Summary Metrics -->
-    <div class="col-md-6 mb-4 text-center">
-        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff;">
-            <p class="small text-white-50 fw-bold mb-1">TOTAL FINALIZED REPORTS</p>
-            <h1 class="fw-bold mb-0">{{ summary.count|default:0 }}</h1>
-        </div>
-    </div>
-    <div class="col-md-6 mb-4 text-center">
-        <div class="card p-4 shadow-sm border-0" style="border-radius: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff;">
-            <p class="small text-white-50 fw-bold mb-1">TOTAL FINALIZED HOURS</p>
-            <h1 class="fw-bold mb-0">{{ summary.total_hours|default:0 }}h</h1>
-        </div>
-    </div>
-    
-    <!-- Section 1: Pending Leader Reports -->
-    <div class="col-lg-12 mb-5">
-        <h4 class="fw-bold mb-3 text-dark"><i class="fas fa-clock text-warning me-2"></i>Pending Leader Reports</h4>
-        <div class="card p-4 shadow-sm" style="border-radius: 20px;">
-           <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="bg-light">
-                        <tr class="text-muted small fw-bold">
-                            <th>Leader</th>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Hours</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for report in pending_reports %}
-                        <tr>
-                            <td class="fw-bold">
-                                {{ report.user.get_full_name|default:report.user.username }}
-                                <br><small class="text-muted fw-normal">{{ report.user.team.name }}</small>
-                            </td>
-                            <td>{{ report.date|date:"Y-m-d" }}</td>
-                            <td class="text-truncate" style="max-width: 300px;">{{ report.work_description }}</td>
-                            <td class="fw-bold">{{ report.hours_worked }}h</td>
-                            <td>
-                                <div class="d-flex gap-2">
-                                    <a href="{% url 'approve_report' report.id %}" class="btn btn-success btn-sm px-3 shadow-sm fw-bold">
-                                        <i class="fas fa-check me-1"></i> Accept & Save
-                                    </a>
-                                    <a href="{% url 'reject_report' report.id %}" class="btn btn-outline-danger btn-sm px-3 shadow-sm fw-bold">
-                                        Reject
-                                    </a>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 border-0">
+                <thead>
+                    <tr class="text-uppercase tiny fw-black text-muted bg-light bg-opacity-50" style="letter-spacing: 0.1em; border-bottom: 2px solid #f8fafc;">
+                        <th class="ps-4 py-3 border-0">Leadership Identity</th>
+                        <th class="py-3 border-0">Validation Date</th>
+                        <th class="py-3 border-0 text-center">Productivity Data</th>
+                        <th class="py-3 pe-4 border-0 text-end">Action Interface</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: 0;">
+                    {% for report in pending_reports %}
+                    <tr class="report-row transition-all" style="border-bottom: 1px solid #f8fafc;">
+                        <td class="ps-4 py-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-warning bg-opacity-10 text-warning rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; flex-shrink: 0;">
+                                    <i class="fas fa-crown small"></i>
                                 </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="5" class="text-center py-4 text-muted">No pending leader reports.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-           </div>
-        </div>
-    </div>
-
-    <!-- Section 2: Finalized Report Database -->
-    <div class="col-lg-12">
-        <h4 class="fw-bold mb-3 text-dark"><i class="fas fa-database text-primary me-2"></i>Finalized Report Database</h4>
-        <div class="card p-4 shadow-sm" style="border-radius: 20px;">
-           <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="bg-light">
-                        <tr class="text-muted small fw-bold">
-                            <th>Level</th>
-                            <th>Employee</th>
-                            <th>Leader</th>
-                            <th>Team</th>
-                            <th>Date</th>
-                            <th>Hours</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for report in final_reports %}
-                        <tr {% if report.level == 'leader_level' %}class="table-light"{% endif %}>
-                            <td>
-                                <span class="badge {% if report.level == 'employee_level' %}bg-info{% else %}bg-primary{% endif %}">
-                                    {{ report.get_level_display }}
-                                </span>
-                            </td>
-                            <td class="small">{{ report.employee.get_full_name|default:"--" }}</td>
-                            <td class="small">{{ report.leader.get_full_name|default:"--" }}</td>
-                            <td>{{ report.team.name }}</td>
-                            <td>{{ report.date|date:"Y-m-d" }}</td>
-                            <td class="fw-bold">{{ report.hours_worked }}h</td>
-                            <td><span class="status-badge status-leader"><i class="fas fa-check-double me-1"></i> SAVED</span></td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="7" class="text-center py-4 text-muted">No finalized reports found in database.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-           </div>
+                                <div>
+                                    <div class="fw-black text-dark" style="font-size: 1rem;">{{ report.user.get_full_name|default:report.user.username }}</div>
+                                    <div class="text-muted tiny mt-1 text-uppercase">HEAD OF {{ report.user.team.name }} UNIT</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 fw-black text-dark" style="font-size: 0.95rem;">{{ report.date|date:"D, d M Y" }}</td>
+                        <td class="py-4 text-center">
+                            <div class="px-3 py-2 rounded-pill bg-light d-inline-flex align-items-center border shadow-sm" style="gap: 12px;">
+                                <span class="fw-black text-primary"><i class="fas fa-chart-bar me-1"></i> {{ report.hours_worked }} Hours Output</span>
+                            </div>
+                        </td>
+                        <td class="pe-4 py-4 text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'approve_report' report.id %}" class="btn btn-dark btn-sm rounded-pill px-4 fw-black border-0 shadow-sm" style="background: #000000; font-size: 0.75rem; letter-spacing: 0.05em;">
+                                    ACCEPT DATA
+                                </a>
+                                <a href="{% url 'reject_report' report.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold border-0" style="font-size: 0.75rem;">
+                                    REJECT
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="py-5 text-center">
+                            <div class="py-5">
+                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-clipboard-check text-success fa-2x opacity-25"></i>
+                                </div>
+                                <h5 class="fw-black text-dark mb-1">Workflow Clean</h5>
+                                <p class="text-muted small fw-bold">All leadership logs have been successfully processed.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+<!-- Finalized Global Database -->
+<div class="card border-0 shadow-sm animate-slide-up mb-5" style="border-radius: 28px; animation-delay: 0.5s; overflow: hidden; background: #ffffff;">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex align-items-center justify-content-between">
+        <div>
+            <h4 class="fw-black text-dark mb-0"><i class="fas fa-server me-2 opacity-50"></i> Validated Repository</h4>
+            <p class="text-muted tiny mt-1 mb-0 tracking-widest text-uppercase">Permanent Master Archive V2.0</p>
+        </div>
+        <span class="badge bg-light text-dark border rounded-pill px-4 py-2 fw-black shadow-sm" style="font-size: 0.75rem; letter-spacing: 0.05em;">SECURE STORAGE</span>
+    </div>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 border-0">
+                <thead>
+                    <tr class="text-uppercase tiny fw-black text-muted bg-light bg-opacity-50" style="letter-spacing: 0.1em; border-bottom: 2px solid #f8fafc;">
+                        <th class="ps-4 py-3 border-0">Entity Type</th>
+                        <th class="py-3 border-0">Member Identity</th>
+                        <th class="py-3 border-0 text-center">Team Unit</th>
+                        <th class="py-3 border-0 text-center">Work Date</th>
+                        <th class="py-3 border-0 text-center">Output</th>
+                        <th class="py-3 pe-4 border-0 text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody style="border-top: 0;">
+                    {% for report in final_reports %}
+                    <tr style="border-bottom: 1px solid #f8fafc;">
+                        <td class="ps-4 py-4">
+                            <span class="badge rounded-pill {% if report.level == 'employee_level' %}bg-secondary bg-opacity-10 text-secondary{% else %}bg-dark text-white shadow-sm{% endif %} py-2 px-3 fw-black" style="font-size: 0.6rem; letter-spacing: 0.05em;">
+                                {{ report.get_level_display|upper }}
+                            </span>
+                        </td>
+                        <td class="py-4">
+                            <div class="fw-black text-dark" style="font-size: 0.95rem;">{{ report.employee.get_full_name|default:report.employee.username|default:report.leader.get_full_name|default:report.leader.username }}</div>
+                            <div class="text-muted tiny mt-1 text-uppercase">LOG REFERENCE #{{ report.id|stringformat:"05d" }}</div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="fw-bold text-dark opacity-75 small text-uppercase">{{ report.team.name }}</div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="fw-bold text-dark small">{{ report.date|date:"d M, Y" }}</div>
+                        </td>
+                        <td class="py-4 text-center">
+                            <div class="fw-black text-primary" style="font-size: 0.9rem;">{{ report.hours_worked }}H</div>
+                        </td>
+                        <td class="pe-4 py-4 text-end">
+                            <div class="d-inline-flex align-items-center gap-1 text-success fw-black small">
+                                <i class="fas fa-shield-check opacity-50"></i> ARCHIVED
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="text-center py-5 text-muted fw-bold">REPOSITORY CURRENTLY EMPTY</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .fw-black { font-weight: 800; }
+    .tiny { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.02em; }
+    
+    .bg-faint { background-color: #fbfcfe; }
+    
+    .hover-card {
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+    }
+    
+    .hover-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12) !important;
+        background-color: #ffffff !important;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .border-dashed { border: 2px dashed #cbd5e1; }
+    .bg-warning-subtle { background-color: #fef3c7; }
+</style>
 {% endblock %}
